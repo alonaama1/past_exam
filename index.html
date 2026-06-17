@@ -206,29 +206,28 @@
                 </div>
 
                 <!-- 3. FLASHCARDS CONTAINER -->
-                <div id="flashcardContainer" class="hidden space-y-6">
+              <div id="flashcardContainer" class="hidden space-y-6">
                     <div class="flex justify-between items-center text-xs">
                         <span class="text-slate-400 font-bold" id="flashCardCount">כרטיסייה 1</span>
-                        <span class="italic text-slate-400">לחצי על הכרטיסייה כדי להפוך!</span>
+                        <span class="italic text-slate-400">לחצי על הכרטיסייה לחשיפת התשובה!</span>
                     </div>
-                    <div onclick="flipFlashcard()" class="perspective-1000 w-full h-[300px] cursor-pointer">
-                        <div id="flashcardInner" class="transform-style-3d duration-500 relative w-full h-full transform transition-all">
-                            <!-- Front -->
-                            <div class="backface-hidden absolute inset-0 bg-slate-900 border border-slate-800 rounded-3xl p-8 flex flex-col justify-center shadow-xl">
-                                <div class="text-xs font-bold text-cyan-400 uppercase absolute top-6" id="fcCategory">קטגוריה</div>
-                                <div class="text-lg font-bold text-center text-white" id="fcQuestionText">טוען...</div>
-                            </div>
-                            <!-- Back -->
-                            <div class="backface-hidden rotate-y-180 absolute inset-0 bg-slate-800 border border-cyan-900/50 rounded-3xl p-8 flex flex-col shadow-xl overflow-y-auto">
-                                <div class="text-xs font-bold text-emerald-400 uppercase mb-4">תשובה נכונה:</div>
-                                <div class="p-3 bg-emerald-950/30 text-emerald-300 rounded-xl font-bold text-sm mb-3" id="fcAnswerTextHeader"></div>
-                                <p class="text-sm text-slate-300 leading-relaxed" id="fcAnswerTextBody"></p>
-                            </div>
+
+                    <div onclick="flipFlashcard()" class="w-full min-h-[300px] cursor-pointer bg-slate-900 border border-slate-800 rounded-3xl p-8 flex flex-col justify-center shadow-xl transition-all hover:bg-slate-800">
+                        <div id="fcFront" class="space-y-6">
+                            <div class="text-xs font-bold text-cyan-400 uppercase text-center" id="fcCategory">קטגוריה</div>
+                            <div class="text-xl font-bold text-center leading-relaxed text-white" id="fcQuestionText">טוען...</div>
+                        </div>
+
+                        <div id="fcBack" class="hidden space-y-4">
+                            <div class="text-xs font-bold text-emerald-400 uppercase text-center mb-2">💡 תשובה והסבר:</div>
+                            <div class="p-4 bg-emerald-950/30 text-emerald-300 rounded-2xl font-bold text-base text-center" id="fcAnswerTextHeader"></div>
+                            <p class="text-sm text-slate-300 leading-relaxed text-right mt-4" id="fcAnswerTextBody"></p>
                         </div>
                     </div>
+
                     <div class="flex justify-between items-center mt-4">
-                        <button onclick="prevFlashcard()" class="bg-slate-900 border border-slate-800 p-4 rounded-full text-slate-300 hover:bg-slate-800">← הקודם</button>
-                        <button onclick="nextFlashcard()" class="bg-slate-900 border border-slate-800 p-4 rounded-full text-slate-300 hover:bg-slate-800">הבא →</button>
+                        <button onclick="prevFlashcard()" class="bg-slate-900 border border-slate-800 px-6 py-3 rounded-xl font-bold text-slate-300 hover:bg-slate-700 transition-all">← הקודם</button>
+                        <button onclick="nextFlashcard()" class="bg-slate-900 border border-slate-800 px-6 py-3 rounded-xl font-bold text-slate-300 hover:bg-slate-700 transition-all">הבא →</button>
                     </div>
                 </div>
 
@@ -2633,7 +2632,47 @@ function checkPracticeAnswer(selectedIdx, btn, q) {
                 renderFlashcard(); 
             } 
         }
+// --- מערכת ניהול כרטיסיות (גרסה יציבה) ---
+        function renderFlashcard() {
+            if (currentFiltered.length === 0) return;
+            const q = currentFiltered[flashcardIndex];
+            flashcardFlipped = false;
+            
+            document.getElementById('fcFront').classList.remove('hidden');
+            document.getElementById('fcBack').classList.add('hidden');
+            
+            document.getElementById('fcCategory').innerText = q.category;
+            document.getElementById('fcQuestionText').innerHTML = q.text;
+            document.getElementById('fcAnswerTextHeader').innerHTML = q.options[q.correctIndex];
+            document.getElementById('fcAnswerTextBody').innerHTML = q.explanation || '';
+            document.getElementById('flashCardCount').innerText = `כרטיסייה ${flashcardIndex + 1} מתוך ${currentFiltered.length}`;
+            renderMathElements();
+        }
 
+        function flipFlashcard() {
+            flashcardFlipped = !flashcardFlipped;
+            if (flashcardFlipped) {
+                document.getElementById('fcFront').classList.add('hidden');
+                document.getElementById('fcBack').classList.remove('hidden');
+            } else {
+                document.getElementById('fcFront').classList.remove('hidden');
+                document.getElementById('fcBack').classList.add('hidden');
+            }
+        }
+
+        function nextFlashcard() { 
+            if (flashcardIndex < currentFiltered.length - 1) { 
+                flashcardIndex++; 
+                renderFlashcard(); 
+            } 
+        }
+        
+        function prevFlashcard() { 
+            if (flashcardIndex > 0) { 
+                flashcardIndex--; 
+                renderFlashcard(); 
+            } 
+        }
         function showPracticeSummary() {
             document.getElementById('practiceContainer').classList.add('hidden');
             document.getElementById('practiceReportCard').classList.remove('hidden');

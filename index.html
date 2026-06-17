@@ -2385,7 +2385,7 @@
 // סוף המאגר!
 // ==========================================
 
-        let currentFiltered = [...baseQuestions];
+      let currentFiltered = [...baseQuestions];
         let currentMode = 'practice';
         let selectedCategory = 'All';
         let shuffleOrderEnabled = false;
@@ -2420,14 +2420,16 @@
             currentMode = mode;
             ['practice', 'exam', 'flashcard'].forEach(m => {
                 const el = document.getElementById(`setupMode-${m}`);
-                if(m === mode) {
-                    el.classList.remove('opacity-70', 'border-slate-800', 'bg-slate-900');
-                    el.classList.add('border-2', 'border-cyan-500', 'bg-cyan-950/20');
-                    el.querySelector('h4').classList.replace('text-slate-300', 'text-cyan-400');
-                } else {
-                    el.classList.add('opacity-70', 'border-slate-800', 'bg-slate-900');
-                    el.classList.remove('border-2', 'border-cyan-500', 'bg-cyan-950/20');
-                    el.querySelector('h4').classList.replace('text-cyan-400', 'text-slate-300');
+                if(el) {
+                    if(m === mode) {
+                        el.classList.remove('opacity-70', 'border-slate-800', 'bg-slate-900');
+                        el.classList.add('border-2', 'border-cyan-500', 'bg-cyan-950/20');
+                        el.querySelector('h4').classList.replace('text-slate-300', 'text-cyan-400');
+                    } else {
+                        el.classList.add('opacity-70', 'border-slate-800', 'bg-slate-900');
+                        el.classList.remove('border-2', 'border-cyan-500', 'bg-cyan-950/20');
+                        el.querySelector('h4').classList.replace('text-cyan-400', 'text-slate-300');
+                    }
                 }
             });
         }
@@ -2455,6 +2457,8 @@
             document.getElementById('practiceContainer').classList.add('hidden');
             document.getElementById('examContainer').classList.add('hidden');
             document.getElementById('flashcardContainer').classList.add('hidden');
+            
+            if(document.getElementById('practiceReportCard')) document.getElementById('practiceReportCard').classList.add('hidden');
 
             if(currentMode === 'practice') {
                 document.getElementById('practiceContainer').classList.remove('hidden');
@@ -2471,13 +2475,16 @@
             clearInterval(examInterval);
             document.getElementById('mainWorkspace').classList.add('hidden');
             document.getElementById('welcomeScreen').classList.remove('hidden');
+            if(document.getElementById('practiceReportCard')) {
+                document.getElementById('practiceReportCard').classList.add('hidden');
+            }
+            document.getElementById('practiceContainer').classList.remove('hidden'); 
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-function applyFilters() {
+        function applyFilters() {
             let workingSet = selectedCategory === 'All' ? [...baseQuestions] : baseQuestions.filter(q => q.category === selectedCategory);
             
-            // ערבוב שאלות אם נבחר
             if (shuffleOrderEnabled) {
                 for (let i = workingSet.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -2485,7 +2492,6 @@ function applyFilters() {
                 }
             }
             
-            // חיתוך כמות השאלות לפי מה שהמשתמשת בחרה
             const countSelect = document.getElementById('setupQuestionCount');
             if (countSelect && countSelect.value !== 'All') {
                 const limit = parseInt(countSelect.value);
@@ -2512,7 +2518,7 @@ function applyFilters() {
         }
 
         // --- PRACTICE ---
-      function renderPractice() {
+        function renderPractice() {
             if (currentFiltered.length === 0) return;
             const q = currentFiltered[practiceIndex];
             const container = document.getElementById('pracOptions');
@@ -2533,7 +2539,6 @@ function applyFilters() {
                 container.appendChild(btn);
             });
 
-            // עדכון הכפתור: אם זו שאלה אחרונה - שנה ל"סיום"
             const nextBtn = document.getElementById('pracNextBtn');
             if (nextBtn) {
                 if (practiceIndex === currentFiltered.length - 1) {
@@ -2546,12 +2551,13 @@ function applyFilters() {
             }
             renderMathElements();
         }
-function checkPracticeAnswer(selectedIdx, btn, q) {
+
+        function checkPracticeAnswer(selectedIdx, btn, q) {
             const correctIdx = activePracShuffled.correctIndex;
             const btns = document.getElementById('pracOptions').querySelectorAll('button');
             
             btns.forEach((b, i) => {
-                b.onclick = null; // מונע לחיצה כפולה
+                b.onclick = null;
                 if (i === correctIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-green-500 bg-green-950/20 text-green-300 font-bold flex items-center justify-between";
                 else if (i === selectedIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-red-500 bg-red-950/20 text-red-300 font-bold flex items-center justify-between";
                 else b.className = "w-full text-right p-4 rounded-xl border border-slate-800 bg-slate-950 opacity-40 flex items-center justify-between";
@@ -2573,6 +2579,7 @@ function checkPracticeAnswer(selectedIdx, btn, q) {
             document.getElementById('explanationBox').classList.remove('hidden');
             renderMathElements();
         }
+
         function nextQuestion() {
             if (practiceIndex < currentFiltered.length - 1) { 
                 practiceIndex++; 
@@ -2590,89 +2597,7 @@ function checkPracticeAnswer(selectedIdx, btn, q) {
                 window.scrollTo({ top: 0, behavior: 'smooth' }); 
             }
         }
-        // --- מערכת ניהול וסיבוב כרטיסיות שינון ---
-        function renderFlashcard() {
-            if (currentFiltered.length === 0) return;
-            const q = currentFiltered[flashcardIndex];
-            flashcardFlipped = false;
-            
-            const inner = document.getElementById('flashcardInner');
-            if (inner) inner.style.transform = "rotateY(0deg)"; // איפוס סיבוב
-            
-            document.getElementById('fcCategory').innerText = q.category;
-            document.getElementById('fcQuestionText').innerHTML = q.text;
-            document.getElementById('fcAnswerTextHeader').innerHTML = q.options[q.correctIndex];
-            document.getElementById('fcAnswerTextBody').innerHTML = q.explanation || '';
-            document.getElementById('flashCardCount').innerText = `כרטיסייה ${flashcardIndex + 1} מתוך ${currentFiltered.length}`;
-            renderMathElements();
-        }
 
-        function flipFlashcard() {
-            const inner = document.getElementById('flashcardInner');
-            if (!inner) return;
-            
-            if (flashcardFlipped) {
-                inner.style.transform = "rotateY(0deg)";
-            } else {
-                inner.style.transform = "rotateY(180deg)";
-            }
-            flashcardFlipped = !flashcardFlipped;
-        }
-
-        function nextFlashcard() { 
-            if (flashcardIndex < currentFiltered.length - 1) { 
-                flashcardIndex++; 
-                renderFlashcard(); 
-            } 
-        }
-        
-        function prevFlashcard() { 
-            if (flashcardIndex > 0) { 
-                flashcardIndex--; 
-                renderFlashcard(); 
-            } 
-        }
-// --- מערכת ניהול כרטיסיות (גרסה יציבה) ---
-        function renderFlashcard() {
-            if (currentFiltered.length === 0) return;
-            const q = currentFiltered[flashcardIndex];
-            flashcardFlipped = false;
-            
-            document.getElementById('fcFront').classList.remove('hidden');
-            document.getElementById('fcBack').classList.add('hidden');
-            
-            document.getElementById('fcCategory').innerText = q.category;
-            document.getElementById('fcQuestionText').innerHTML = q.text;
-            document.getElementById('fcAnswerTextHeader').innerHTML = q.options[q.correctIndex];
-            document.getElementById('fcAnswerTextBody').innerHTML = q.explanation || '';
-            document.getElementById('flashCardCount').innerText = `כרטיסייה ${flashcardIndex + 1} מתוך ${currentFiltered.length}`;
-            renderMathElements();
-        }
-
-        function flipFlashcard() {
-            flashcardFlipped = !flashcardFlipped;
-            if (flashcardFlipped) {
-                document.getElementById('fcFront').classList.add('hidden');
-                document.getElementById('fcBack').classList.remove('hidden');
-            } else {
-                document.getElementById('fcFront').classList.remove('hidden');
-                document.getElementById('fcBack').classList.add('hidden');
-            }
-        }
-
-        function nextFlashcard() { 
-            if (flashcardIndex < currentFiltered.length - 1) { 
-                flashcardIndex++; 
-                renderFlashcard(); 
-            } 
-        }
-        
-        function prevFlashcard() { 
-            if (flashcardIndex > 0) { 
-                flashcardIndex--; 
-                renderFlashcard(); 
-            } 
-        }
         function showPracticeSummary() {
             document.getElementById('practiceContainer').classList.add('hidden');
             document.getElementById('practiceReportCard').classList.remove('hidden');
@@ -2689,26 +2614,23 @@ function checkPracticeAnswer(selectedIdx, btn, q) {
             document.getElementById('practiceReportCard').classList.add('hidden');
             document.getElementById('practiceContainer').classList.remove('hidden');
             statistics = { correct: 0, wrong: 0, answered: {} };
+            document.getElementById('correctCounter').innerText = '0';
+            document.getElementById('wrongCounter').innerText = '0';
+            document.getElementById('globalAccuracyVal').innerText = '0%';
             practiceIndex = 0;
-            renderPractice();
-        }
-
-        function exitSessionToHome() {
-            document.getElementById('mainWorkspace').classList.add('hidden');
-            document.getElementById('welcomeScreen').classList.remove('hidden');
-            document.getElementById('practiceReportCard').classList.add('hidden');
-            document.getElementById('practiceContainer').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            applyFilters(); 
         }
 
         // --- EXAM ---
         function startExam() {
-            let pool = [...baseQuestions];
-            for (let i = pool.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [pool[i], pool[j]] = [pool[j], pool[i]];
+            let pool = [...currentFiltered];
+            if (shuffleOrderEnabled) {
+                for (let i = pool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pool[i], pool[j]] = [pool[j], pool[i]];
+                }
             }
-            examQuestions = pool.slice(0, Math.min(50, pool.length)).map(q => {
+            examQuestions = pool.map(q => {
                 const s = getShuffledOptions(q);
                 return { ...q, shuffledTexts: s.shuffledTexts, newCorrectIndex: s.correctIndex };
             });
@@ -2742,6 +2664,17 @@ function checkPracticeAnswer(selectedIdx, btn, q) {
                 btn.innerHTML = text;
                 container.appendChild(btn);
             });
+
+            const examNextBtn = document.getElementById('examNextBtn');
+            if (examNextBtn) {
+                if (examCurrentIndex === examQuestions.length - 1) {
+                    examNextBtn.innerText = "הגש מבחן 🏁";
+                    examNextBtn.className = "px-4 py-2 text-xs font-bold rounded-xl bg-red-600 hover:bg-red-500 text-white transition-all";
+                } else {
+                    examNextBtn.innerText = "הבאה →";
+                    examNextBtn.className = "px-4 py-2 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-all";
+                }
+            }
             renderMathElements();
         }
 
@@ -2755,8 +2688,19 @@ function checkPracticeAnswer(selectedIdx, btn, q) {
                 container.appendChild(b);
             });
         }
-        function nextExamQuestion() { if(examCurrentIndex < examQuestions.length - 1) { examCurrentIndex++; renderExamQuestion(); renderExamBubbles(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
-        function prevExamQuestion() { if(examCurrentIndex > 0) { examCurrentIndex--; renderExamQuestion(); renderExamBubbles(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
+
+        function nextExamQuestion() { 
+            if(examCurrentIndex < examQuestions.length - 1) { 
+                examCurrentIndex++; renderExamQuestion(); renderExamBubbles(); window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            } else {
+                submitExam();
+            }
+        }
+        function prevExamQuestion() { 
+            if(examCurrentIndex > 0) { 
+                examCurrentIndex--; renderExamQuestion(); renderExamBubbles(); window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            } 
+        }
 
         function submitExam() {
             clearInterval(examInterval);
@@ -2769,12 +2713,19 @@ function checkPracticeAnswer(selectedIdx, btn, q) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // --- FLASHCARDS ---
+        // --- FLASHCARDS (גרסה יציבה) ---
         function renderFlashcard() {
-            if(currentFiltered.length === 0) return;
+            if (currentFiltered.length === 0) return;
             const q = currentFiltered[flashcardIndex];
             flashcardFlipped = false;
-            document.getElementById('flashcardInner').classList.remove('rotate-y-180');
+            
+            const front = document.getElementById('fcFront');
+            const back = document.getElementById('fcBack');
+            if(front && back) {
+                front.classList.remove('hidden');
+                back.classList.add('hidden');
+            }
+            
             document.getElementById('fcCategory').innerText = q.category;
             document.getElementById('fcQuestionText').innerHTML = q.text;
             document.getElementById('fcAnswerTextHeader').innerHTML = q.options[q.correctIndex];
@@ -2782,16 +2733,35 @@ function checkPracticeAnswer(selectedIdx, btn, q) {
             document.getElementById('flashCardCount').innerText = `כרטיסייה ${flashcardIndex + 1} מתוך ${currentFiltered.length}`;
             renderMathElements();
         }
-        function flipFlashcard() {
-            const inner = document.getElementById('flashcardInner');
-            if(flashcardFlipped) inner.classList.remove('rotate-y-180');
-            else inner.classList.add('rotate-y-180');
-            flashcardFlipped = !flashcardFlipped;
-        }
-        function nextFlashcard() { if(flashcardIndex < currentFiltered.length - 1) { flashcardIndex++; renderFlashcard(); } }
-        function prevFlashcard() { if(flashcardIndex > 0) { flashcardIndex--; renderFlashcard(); } }
 
-        window.onload = function() { document.getElementById('totalQuestionsCount').innerText = baseQuestions.length; };
-    </script>
+        function flipFlashcard() {
+            flashcardFlipped = !flashcardFlipped;
+            const front = document.getElementById('fcFront');
+            const back = document.getElementById('fcBack');
+            if (front && back) {
+                if (flashcardFlipped) {
+                    front.classList.add('hidden');
+                    back.classList.remove('hidden');
+                } else {
+                    front.classList.remove('hidden');
+                    back.classList.add('hidden');
+                }
+            }
+        }
+
+        function nextFlashcard() { 
+            if (flashcardIndex < currentFiltered.length - 1) { 
+                flashcardIndex++; renderFlashcard(); 
+            } 
+        }
+        function prevFlashcard() { 
+            if (flashcardIndex > 0) { 
+                flashcardIndex--; renderFlashcard(); 
+            } 
+        }
+
+        window.onload = function() { 
+            document.getElementById('totalQuestionsCount').innerText = baseQuestions.length; 
+        };
 </body>
 </html>

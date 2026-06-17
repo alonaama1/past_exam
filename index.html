@@ -2379,389 +2379,390 @@
         explanation: "מערכת ציון בלרד (New Ballard Score) קובעת את הבשלות הפיזיקלית והנוירומוסוקולרית: ככל שהיילוד בשל (מועד - Term) יותר, העור עבה, יש לו יותר קמטים בכפות הרגליים (מופיעים מחלק הקדמי לאחורי), שדיים ממשושים, אשכים שירדו לשק מלא, ותנוחה של כינוס (פלקסיה חזקה) עקב טונוס שרירים מפותח. פגים, לעומת זאת, ייראו חלקים, רפויים ושקופים.",
         category: "אומדן גופני",
         source: "ספר פגים Walden"
+    ]; // סוף מאגר השאלות!
+
+    // ==========================================
+    // מערכת הלוגיקה והפעלת האתר
+    // ==========================================
+    
+    let currentFiltered = [...baseQuestions];
+    let currentMode = 'practice';
+    let selectedCategory = 'All';
+    let shuffleOrderEnabled = false;
+    
+    let practiceIndex = 0;
+    let activePracShuffled = null;
+    let statistics = { correct: 0, wrong: 0, answered: {} };
+
+    let examQuestions = [];
+    let examAnswers = {};
+    let examCurrentIndex = 0;
+    let examTimeLeft = 3600;
+    let examInterval = null;
+
+    let flashcardIndex = 0;
+    let flashcardFlipped = false;
+
+    function renderMathElements() {
+        setTimeout(() => {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: "$$", right: "$$", display: true},
+                        {left: "$", right: "$", display: false}
+                    ]
+                });
+            }
+        }, 100);
     }
-];
-// ==========================================
-// סוף המאגר!
-// ==========================================
 
-      let currentFiltered = [...baseQuestions];
-        let currentMode = 'practice';
-        let selectedCategory = 'All';
-        let shuffleOrderEnabled = false;
-        
-        let practiceIndex = 0;
-        let activePracShuffled = null;
-        let statistics = { correct: 0, wrong: 0, answered: {} };
-
-        let examQuestions = [];
-        let examAnswers = {};
-        let examCurrentIndex = 0;
-        let examTimeLeft = 3600;
-        let examInterval = null;
-
-        let flashcardIndex = 0;
-        let flashcardFlipped = false;
-
-        function renderMathElements() {
-            setTimeout(() => {
-                if (window.renderMathInElement) {
-                    renderMathInElement(document.body, {
-                        delimiters: [
-                            {left: "$$", right: "$$", display: true},
-                            {left: "$", right: "$", display: false}
-                        ]
-                    });
-                }
-            }, 100);
-        }
-
-        function selectSetupMode(mode) {
-            currentMode = mode;
-            ['practice', 'exam', 'flashcard'].forEach(m => {
-                const el = document.getElementById(`setupMode-${m}`);
-                if(el) {
-                    if(m === mode) {
-                        el.classList.remove('opacity-70', 'border-slate-800', 'bg-slate-900');
-                        el.classList.add('border-2', 'border-cyan-500', 'bg-cyan-950/20');
-                        el.querySelector('h4').classList.replace('text-slate-300', 'text-cyan-400');
-                    } else {
-                        el.classList.add('opacity-70', 'border-slate-800', 'bg-slate-900');
-                        el.classList.remove('border-2', 'border-cyan-500', 'bg-cyan-950/20');
-                        el.querySelector('h4').classList.replace('text-cyan-400', 'text-slate-300');
-                    }
-                }
-            });
-        }
-
-        function setSetupShuffle(val) {
-            shuffleOrderEnabled = val;
-            const tBtn = document.getElementById('shuffleMode-true');
-            const fBtn = document.getElementById('shuffleMode-false');
-            if (val) {
-                tBtn.classList.replace('border-slate-700', 'border-cyan-500'); tBtn.classList.replace('text-slate-400', 'text-cyan-400');
-                fBtn.classList.replace('border-cyan-500', 'border-slate-700'); fBtn.classList.replace('text-cyan-400', 'text-slate-400');
-            } else {
-                fBtn.classList.replace('border-slate-700', 'border-cyan-500'); fBtn.classList.replace('text-slate-400', 'text-cyan-400');
-                tBtn.classList.replace('border-cyan-500', 'border-slate-700'); tBtn.classList.replace('text-cyan-400', 'text-slate-400');
-            }
-        }
-
-        function launchStudySession() {
-            selectedCategory = document.getElementById('setupCategory').value;
-            applyFilters();
-            
-            document.getElementById('welcomeScreen').classList.add('hidden');
-            document.getElementById('mainWorkspace').classList.remove('hidden');
-            
-            document.getElementById('practiceContainer').classList.add('hidden');
-            document.getElementById('examContainer').classList.add('hidden');
-            document.getElementById('flashcardContainer').classList.add('hidden');
-            
-            if(document.getElementById('practiceReportCard')) document.getElementById('practiceReportCard').classList.add('hidden');
-
-            if(currentMode === 'practice') {
-                document.getElementById('practiceContainer').classList.remove('hidden');
-            } else if (currentMode === 'exam') {
-                document.getElementById('examContainer').classList.remove('hidden');
-                startExam();
-            } else {
-                document.getElementById('flashcardContainer').classList.remove('hidden');
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function exitSessionToHome() {
-            clearInterval(examInterval);
-            document.getElementById('mainWorkspace').classList.add('hidden');
-            document.getElementById('welcomeScreen').classList.remove('hidden');
-            if(document.getElementById('practiceReportCard')) {
-                document.getElementById('practiceReportCard').classList.add('hidden');
-            }
-            document.getElementById('practiceContainer').classList.remove('hidden'); 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function applyFilters() {
-            let workingSet = selectedCategory === 'All' ? [...baseQuestions] : baseQuestions.filter(q => q.category === selectedCategory);
-            
-            if (shuffleOrderEnabled) {
-                for (let i = workingSet.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [workingSet[i], workingSet[j]] = [workingSet[j], workingSet[i]];
-                }
-            }
-            
-            const countSelect = document.getElementById('setupQuestionCount');
-            if (countSelect && countSelect.value !== 'All') {
-                const limit = parseInt(countSelect.value);
-                workingSet = workingSet.slice(0, limit);
-            }
-
-            currentFiltered = workingSet;
-            practiceIndex = 0;
-            flashcardIndex = 0;
-            if(currentMode === 'practice') renderPractice();
-            if(currentMode === 'flashcard') renderFlashcard();
-        }
-
-        function getShuffledOptions(question) {
-            let mapped = question.options.map((text, idx) => ({ text, isCorrect: idx === question.correctIndex }));
-            for (let i = mapped.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [mapped[i], mapped[j]] = [mapped[j], mapped[i]];
-            }
-            return {
-                shuffledTexts: mapped.map(o => o.text),
-                correctIndex: mapped.findIndex(o => o.isCorrect)
-            };
-        }
-
-        // --- PRACTICE ---
-        function renderPractice() {
-            if (currentFiltered.length === 0) return;
-            const q = currentFiltered[practiceIndex];
-            const container = document.getElementById('pracOptions');
-            document.getElementById('explanationBox').classList.add('hidden');
-            
-            document.getElementById('pracQuestionText').innerHTML = q.text;
-            document.getElementById('pracCategory').innerText = q.category;
-            document.getElementById('pracIndex').innerText = `שאלה ${practiceIndex + 1} מתוך ${currentFiltered.length}`;
-
-            activePracShuffled = getShuffledOptions(q);
-            container.innerHTML = '';
-            
-            activePracShuffled.shuffledTexts.forEach((text, idx) => {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-right p-4 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800/80 transition flex items-center justify-between";
-                btn.onclick = () => checkPracticeAnswer(idx, btn, q);
-                btn.innerHTML = `<span class="pl-4">${text}</span><span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-slate-500">${idx + 1}</span>`;
-                container.appendChild(btn);
-            });
-
-            const nextBtn = document.getElementById('pracNextBtn');
-            if (nextBtn) {
-                if (practiceIndex === currentFiltered.length - 1) {
-                    nextBtn.innerText = "סיום תרגול 🏁";
-                    nextBtn.className = "px-5 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all";
+    function selectSetupMode(mode) {
+        currentMode = mode;
+        ['practice', 'exam', 'flashcard'].forEach(m => {
+            const el = document.getElementById(`setupMode-${m}`);
+            if(el) {
+                if(m === mode) {
+                    el.classList.remove('opacity-70', 'border-slate-800', 'bg-slate-900');
+                    el.classList.add('border-2', 'border-cyan-500', 'bg-cyan-950/20');
+                    el.querySelector('h4').classList.replace('text-slate-300', 'text-cyan-400');
                 } else {
-                    nextBtn.innerText = "הבא →";
-                    nextBtn.className = "px-5 py-2.5 text-xs font-bold rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white transition-all";
+                    el.classList.add('opacity-70', 'border-slate-800', 'bg-slate-900');
+                    el.classList.remove('border-2', 'border-cyan-500', 'bg-cyan-950/20');
+                    el.querySelector('h4').classList.replace('text-cyan-400', 'text-slate-300');
                 }
             }
-            renderMathElements();
+        });
+    }
+
+    function setSetupShuffle(val) {
+        shuffleOrderEnabled = val;
+        const tBtn = document.getElementById('shuffleMode-true');
+        const fBtn = document.getElementById('shuffleMode-false');
+        if (val) {
+            tBtn.classList.replace('border-slate-700', 'border-cyan-500'); tBtn.classList.replace('text-slate-400', 'text-cyan-400');
+            fBtn.classList.replace('border-cyan-500', 'border-slate-700'); fBtn.classList.replace('text-cyan-400', 'text-slate-400');
+        } else {
+            fBtn.classList.replace('border-slate-700', 'border-cyan-500'); fBtn.classList.replace('text-slate-400', 'text-cyan-400');
+            tBtn.classList.replace('border-cyan-500', 'border-slate-700'); tBtn.classList.replace('text-cyan-400', 'text-slate-400');
         }
+    }
 
-        function checkPracticeAnswer(selectedIdx, btn, q) {
-            const correctIdx = activePracShuffled.correctIndex;
-            const btns = document.getElementById('pracOptions').querySelectorAll('button');
-            
-            btns.forEach((b, i) => {
-                b.onclick = null;
-                if (i === correctIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-green-500 bg-green-950/20 text-green-300 font-bold flex items-center justify-between";
-                else if (i === selectedIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-red-500 bg-red-950/20 text-red-300 font-bold flex items-center justify-between";
-                else b.className = "w-full text-right p-4 rounded-xl border border-slate-800 bg-slate-950 opacity-40 flex items-center justify-between";
-            });
+    function launchStudySession() {
+        selectedCategory = document.getElementById('setupCategory').value;
+        applyFilters();
+        
+        document.getElementById('welcomeScreen').classList.add('hidden');
+        document.getElementById('mainWorkspace').classList.remove('hidden');
+        
+        document.getElementById('practiceContainer').classList.add('hidden');
+        document.getElementById('examContainer').classList.add('hidden');
+        document.getElementById('flashcardContainer').classList.add('hidden');
+        
+        if(document.getElementById('practiceReportCard')) document.getElementById('practiceReportCard').classList.add('hidden');
 
-            if (!statistics.answered[q.id]) {
-                statistics.answered[q.id] = true;
-                if (selectedIdx === correctIdx) statistics.correct++;
-                else statistics.wrong++;
-                document.getElementById('correctCounter').innerText = statistics.correct;
-                document.getElementById('wrongCounter').innerText = statistics.wrong;
-                
-                const total = statistics.correct + statistics.wrong;
-                const acc = Math.round((statistics.correct / total) * 100);
-                document.getElementById('globalAccuracyVal').innerText = acc + "%";
+        if(currentMode === 'practice') {
+            document.getElementById('practiceContainer').classList.remove('hidden');
+        } else if (currentMode === 'exam') {
+            document.getElementById('examContainer').classList.remove('hidden');
+            startExam();
+        } else {
+            document.getElementById('flashcardContainer').classList.remove('hidden');
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function exitSessionToHome() {
+        clearInterval(examInterval);
+        document.getElementById('mainWorkspace').classList.add('hidden');
+        document.getElementById('welcomeScreen').classList.remove('hidden');
+        if(document.getElementById('practiceReportCard')) {
+            document.getElementById('practiceReportCard').classList.add('hidden');
+        }
+        document.getElementById('practiceContainer').classList.remove('hidden'); 
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function applyFilters() {
+        let workingSet = selectedCategory === 'All' ? [...baseQuestions] : baseQuestions.filter(q => q.category === selectedCategory);
+        
+        if (shuffleOrderEnabled) {
+            for (let i = workingSet.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [workingSet[i], workingSet[j]] = [workingSet[j], workingSet[i]];
             }
-
-            document.getElementById('explanationText').innerHTML = q.explanation;
-            document.getElementById('explanationBox').classList.remove('hidden');
-            renderMathElements();
+        }
+        
+        const countSelect = document.getElementById('setupQuestionCount');
+        if (countSelect && countSelect.value !== 'All') {
+            const limit = parseInt(countSelect.value);
+            workingSet = workingSet.slice(0, limit);
         }
 
-        function nextQuestion() {
-            if (practiceIndex < currentFiltered.length - 1) { 
-                practiceIndex++; 
-                renderPractice(); 
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        currentFiltered = workingSet;
+        practiceIndex = 0;
+        flashcardIndex = 0;
+        if(currentMode === 'practice') renderPractice();
+        if(currentMode === 'flashcard') renderFlashcard();
+    }
+
+    function getShuffledOptions(question) {
+        let mapped = question.options.map((text, idx) => ({ text, isCorrect: idx === question.correctIndex }));
+        for (let i = mapped.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [mapped[i], mapped[j]] = [mapped[j], mapped[i]];
+        }
+        return {
+            shuffledTexts: mapped.map(o => o.text),
+            correctIndex: mapped.findIndex(o => o.isCorrect)
+        };
+    }
+
+    // --- PRACTICE ---
+    function renderPractice() {
+        if (currentFiltered.length === 0) return;
+        const q = currentFiltered[practiceIndex];
+        const container = document.getElementById('pracOptions');
+        document.getElementById('explanationBox').classList.add('hidden');
+        
+        document.getElementById('pracQuestionText').innerHTML = q.text;
+        document.getElementById('pracCategory').innerText = q.category;
+        document.getElementById('pracIndex').innerText = `שאלה ${practiceIndex + 1} מתוך ${currentFiltered.length}`;
+
+        activePracShuffled = getShuffledOptions(q);
+        container.innerHTML = '';
+        
+        activePracShuffled.shuffledTexts.forEach((text, idx) => {
+            const btn = document.createElement('button');
+            btn.className = "w-full text-right p-4 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800/80 transition flex items-center justify-between";
+            btn.onclick = () => checkPracticeAnswer(idx, btn, q);
+            btn.innerHTML = `<span class="pl-4">${text}</span><span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-slate-500">${idx + 1}</span>`;
+            container.appendChild(btn);
+        });
+
+        const nextBtn = document.getElementById('pracNextBtn');
+        if (nextBtn) {
+            if (practiceIndex === currentFiltered.length - 1) {
+                nextBtn.innerText = "סיום תרגול 🏁";
+                nextBtn.className = "px-5 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all";
             } else {
-                showPracticeSummary();
+                nextBtn.innerText = "הבא →";
+                nextBtn.className = "px-5 py-2.5 text-xs font-bold rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white transition-all";
             }
         }
+        renderMathElements();
+    }
 
-        function prevQuestion() {
-            if (practiceIndex > 0) { 
-                practiceIndex--; 
-                renderPractice(); 
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
-            }
-        }
+    function checkPracticeAnswer(selectedIdx, btn, q) {
+        const correctIdx = activePracShuffled.correctIndex;
+        const btns = document.getElementById('pracOptions').querySelectorAll('button');
+        
+        btns.forEach((b, i) => {
+            b.onclick = null;
+            if (i === correctIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-green-500 bg-green-950/20 text-green-300 font-bold flex items-center justify-between";
+            else if (i === selectedIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-red-500 bg-red-950/20 text-red-300 font-bold flex items-center justify-between";
+            else b.className = "w-full text-right p-4 rounded-xl border border-slate-800 bg-slate-950 opacity-40 flex items-center justify-between";
+        });
 
-        function showPracticeSummary() {
-            document.getElementById('practiceContainer').classList.add('hidden');
-            document.getElementById('practiceReportCard').classList.remove('hidden');
+        if (!statistics.answered[q.id]) {
+            statistics.answered[q.id] = true;
+            if (selectedIdx === correctIdx) statistics.correct++;
+            else statistics.wrong++;
+            document.getElementById('correctCounter').innerText = statistics.correct;
+            document.getElementById('wrongCounter').innerText = statistics.wrong;
             
             const total = statistics.correct + statistics.wrong;
-            const acc = total > 0 ? Math.round((statistics.correct / total) * 100) : 0;
-            
-            document.getElementById('pracSummaryScore').innerText = acc + "%";
-            document.getElementById('pracSummaryCorrect').innerText = `${statistics.correct}/${currentFiltered.length}`;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const acc = Math.round((statistics.correct / total) * 100);
+            document.getElementById('globalAccuracyVal').innerText = acc + "%";
         }
 
-        function restartPractice() {
-            document.getElementById('practiceReportCard').classList.add('hidden');
-            document.getElementById('practiceContainer').classList.remove('hidden');
-            statistics = { correct: 0, wrong: 0, answered: {} };
-            document.getElementById('correctCounter').innerText = '0';
-            document.getElementById('wrongCounter').innerText = '0';
-            document.getElementById('globalAccuracyVal').innerText = '0%';
-            practiceIndex = 0;
-            applyFilters(); 
-        }
+        document.getElementById('explanationText').innerHTML = q.explanation;
+        document.getElementById('explanationBox').classList.remove('hidden');
+        renderMathElements();
+    }
 
-        // --- EXAM ---
-        function startExam() {
-            let pool = [...currentFiltered];
-            if (shuffleOrderEnabled) {
-                for (let i = pool.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [pool[i], pool[j]] = [pool[j], pool[i]];
-                }
+    function nextQuestion() {
+        if (practiceIndex < currentFiltered.length - 1) { 
+            practiceIndex++; 
+            renderPractice(); 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        } else {
+            showPracticeSummary();
+        }
+    }
+
+    function prevQuestion() {
+        if (practiceIndex > 0) { 
+            practiceIndex--; 
+            renderPractice(); 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        }
+    }
+
+    function showPracticeSummary() {
+        document.getElementById('practiceContainer').classList.add('hidden');
+        document.getElementById('practiceReportCard').classList.remove('hidden');
+        
+        const total = statistics.correct + statistics.wrong;
+        const acc = total > 0 ? Math.round((statistics.correct / total) * 100) : 0;
+        
+        document.getElementById('pracSummaryScore').innerText = acc + "%";
+        document.getElementById('pracSummaryCorrect').innerText = `${statistics.correct}/${currentFiltered.length}`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function restartPractice() {
+        document.getElementById('practiceReportCard').classList.add('hidden');
+        document.getElementById('practiceContainer').classList.remove('hidden');
+        statistics = { correct: 0, wrong: 0, answered: {} };
+        document.getElementById('correctCounter').innerText = '0';
+        document.getElementById('wrongCounter').innerText = '0';
+        document.getElementById('globalAccuracyVal').innerText = '0%';
+        practiceIndex = 0;
+        applyFilters(); 
+    }
+
+    // --- EXAM ---
+    function startExam() {
+        let pool = [...currentFiltered];
+        if (shuffleOrderEnabled) {
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
             }
-            examQuestions = pool.map(q => {
-                const s = getShuffledOptions(q);
-                return { ...q, shuffledTexts: s.shuffledTexts, newCorrectIndex: s.correctIndex };
-            });
-            examAnswers = {}; examCurrentIndex = 0; examTimeLeft = 3600;
-            document.getElementById('examReportCard').classList.add('hidden');
-            document.getElementById('examQuestionCard').classList.remove('hidden');
-            renderExamQuestion(); renderExamBubbles();
-            clearInterval(examInterval);
-            examInterval = setInterval(() => {
-                examTimeLeft--;
-                if(examTimeLeft <= 0) submitExam();
-                else {
-                    const m = Math.floor(examTimeLeft / 60).toString().padStart(2,'0');
-                    const s = (examTimeLeft % 60).toString().padStart(2,'0');
-                    document.getElementById('examTimer').innerText = `זמן נותר: ${m}:${s}`;
-                }
-            }, 1000);
         }
-
-        function renderExamQuestion() {
-            const q = examQuestions[examCurrentIndex];
-            document.getElementById('examQuestionText').innerHTML = q.text;
-            document.getElementById('examProgress').innerText = `${examCurrentIndex + 1}/${examQuestions.length}`;
-            const container = document.getElementById('examOptions');
-            container.innerHTML = '';
-            q.shuffledTexts.forEach((text, i) => {
-                const isSel = examAnswers[examCurrentIndex] === text;
-                const btn = document.createElement('button');
-                btn.className = "w-full text-right p-4 rounded-xl border " + (isSel ? "border-cyan-500 bg-cyan-950/30 text-cyan-300" : "border-slate-800 bg-slate-950 text-slate-200");
-                btn.onclick = () => { examAnswers[examCurrentIndex] = text; renderExamQuestion(); renderExamBubbles(); };
-                btn.innerHTML = text;
-                container.appendChild(btn);
-            });
-
-            const examNextBtn = document.getElementById('examNextBtn');
-            if (examNextBtn) {
-                if (examCurrentIndex === examQuestions.length - 1) {
-                    examNextBtn.innerText = "הגש מבחן 🏁";
-                    examNextBtn.className = "px-4 py-2 text-xs font-bold rounded-xl bg-red-600 hover:bg-red-500 text-white transition-all";
-                } else {
-                    examNextBtn.innerText = "הבאה →";
-                    examNextBtn.className = "px-4 py-2 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-all";
-                }
+        examQuestions = pool.map(q => {
+            const s = getShuffledOptions(q);
+            return { ...q, shuffledTexts: s.shuffledTexts, newCorrectIndex: s.correctIndex };
+        });
+        examAnswers = {}; examCurrentIndex = 0; examTimeLeft = 3600;
+        document.getElementById('examReportCard').classList.add('hidden');
+        document.getElementById('examQuestionCard').classList.remove('hidden');
+        renderExamQuestion(); renderExamBubbles();
+        clearInterval(examInterval);
+        examInterval = setInterval(() => {
+            examTimeLeft--;
+            if(examTimeLeft <= 0) submitExam();
+            else {
+                const m = Math.floor(examTimeLeft / 60).toString().padStart(2,'0');
+                const s = (examTimeLeft % 60).toString().padStart(2,'0');
+                document.getElementById('examTimer').innerText = `זמן נותר: ${m}:${s}`;
             }
-            renderMathElements();
-        }
+        }, 1000);
+    }
 
-        function renderExamBubbles() {
-            const container = document.getElementById('examBubbleNav'); container.innerHTML = '';
-            examQuestions.forEach((_, i) => {
-                const b = document.createElement('button');
-                b.className = "w-6 h-6 rounded-full text-[10px] font-bold shrink-0 " + (i === examCurrentIndex ? "bg-cyan-500 text-white" : (examAnswers[i] ? "bg-emerald-800 text-emerald-200" : "bg-slate-800 text-slate-500"));
-                b.onclick = () => { examCurrentIndex = i; renderExamQuestion(); renderExamBubbles(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-                b.innerText = i + 1;
-                container.appendChild(b);
-            });
-        }
+    function renderExamQuestion() {
+        const q = examQuestions[examCurrentIndex];
+        document.getElementById('examQuestionText').innerHTML = q.text;
+        document.getElementById('examProgress').innerText = `${examCurrentIndex + 1}/${examQuestions.length}`;
+        const container = document.getElementById('examOptions');
+        container.innerHTML = '';
+        q.shuffledTexts.forEach((text, i) => {
+            const isSel = examAnswers[examCurrentIndex] === text;
+            const btn = document.createElement('button');
+            btn.className = "w-full text-right p-4 rounded-xl border " + (isSel ? "border-cyan-500 bg-cyan-950/30 text-cyan-300" : "border-slate-800 bg-slate-950 text-slate-200");
+            btn.onclick = () => { examAnswers[examCurrentIndex] = text; renderExamQuestion(); renderExamBubbles(); };
+            btn.innerHTML = text;
+            container.appendChild(btn);
+        });
 
-        function nextExamQuestion() { 
-            if(examCurrentIndex < examQuestions.length - 1) { 
-                examCurrentIndex++; renderExamQuestion(); renderExamBubbles(); window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        const examNextBtn = document.getElementById('examNextBtn');
+        if (examNextBtn) {
+            if (examCurrentIndex === examQuestions.length - 1) {
+                examNextBtn.innerText = "הגש מבחן 🏁";
+                examNextBtn.className = "px-4 py-2 text-xs font-bold rounded-xl bg-red-600 hover:bg-red-500 text-white transition-all";
             } else {
-                submitExam();
+                examNextBtn.innerText = "הבאה →";
+                examNextBtn.className = "px-4 py-2 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-all";
             }
         }
-        function prevExamQuestion() { 
-            if(examCurrentIndex > 0) { 
-                examCurrentIndex--; renderExamQuestion(); renderExamBubbles(); window.scrollTo({ top: 0, behavior: 'smooth' }); 
-            } 
-        }
+        renderMathElements();
+    }
 
-        function submitExam() {
-            clearInterval(examInterval);
-            let cor = 0;
-            examQuestions.forEach((q, i) => { if(examAnswers[i] === q.shuffledTexts[q.newCorrectIndex]) cor++; });
-            document.getElementById('examQuestionCard').classList.add('hidden');
-            document.getElementById('examReportCard').classList.remove('hidden');
-            document.getElementById('examScore').innerText = Math.round((cor/examQuestions.length)*100);
-            document.getElementById('examCorrect').innerText = `${cor}/${examQuestions.length}`;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+    function renderExamBubbles() {
+        const container = document.getElementById('examBubbleNav'); container.innerHTML = '';
+        examQuestions.forEach((_, i) => {
+            const b = document.createElement('button');
+            b.className = "w-6 h-6 rounded-full text-[10px] font-bold shrink-0 " + (i === examCurrentIndex ? "bg-cyan-500 text-white" : (examAnswers[i] ? "bg-emerald-800 text-emerald-200" : "bg-slate-800 text-slate-500"));
+            b.onclick = () => { examCurrentIndex = i; renderExamQuestion(); renderExamBubbles(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+            b.innerText = i + 1;
+            container.appendChild(b);
+        });
+    }
 
-        // --- FLASHCARDS (גרסה יציבה) ---
-        function renderFlashcard() {
-            if (currentFiltered.length === 0) return;
-            const q = currentFiltered[flashcardIndex];
-            flashcardFlipped = false;
-            
-            const front = document.getElementById('fcFront');
-            const back = document.getElementById('fcBack');
-            if(front && back) {
+    function nextExamQuestion() { 
+        if(examCurrentIndex < examQuestions.length - 1) { 
+            examCurrentIndex++; renderExamQuestion(); renderExamBubbles(); window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        } else {
+            submitExam();
+        }
+    }
+    function prevExamQuestion() { 
+        if(examCurrentIndex > 0) { 
+            examCurrentIndex--; renderExamQuestion(); renderExamBubbles(); window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        } 
+    }
+
+    function submitExam() {
+        clearInterval(examInterval);
+        let cor = 0;
+        examQuestions.forEach((q, i) => { if(examAnswers[i] === q.shuffledTexts[q.newCorrectIndex]) cor++; });
+        document.getElementById('examQuestionCard').classList.add('hidden');
+        document.getElementById('examReportCard').classList.remove('hidden');
+        document.getElementById('examScore').innerText = Math.round((cor/examQuestions.length)*100);
+        document.getElementById('examCorrect').innerText = `${cor}/${examQuestions.length}`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // --- FLASHCARDS (גרסה יציבה) ---
+    function renderFlashcard() {
+        if (currentFiltered.length === 0) return;
+        const q = currentFiltered[flashcardIndex];
+        flashcardFlipped = false;
+        
+        const front = document.getElementById('fcFront');
+        const back = document.getElementById('fcBack');
+        if(front && back) {
+            front.classList.remove('hidden');
+            back.classList.add('hidden');
+        }
+        
+        document.getElementById('fcCategory').innerText = q.category;
+        document.getElementById('fcQuestionText').innerHTML = q.text;
+        document.getElementById('fcAnswerTextHeader').innerHTML = q.options[q.correctIndex];
+        document.getElementById('fcAnswerTextBody').innerHTML = q.explanation || '';
+        document.getElementById('flashCardCount').innerText = `כרטיסייה ${flashcardIndex + 1} מתוך ${currentFiltered.length}`;
+        renderMathElements();
+    }
+
+    function flipFlashcard() {
+        flashcardFlipped = !flashcardFlipped;
+        const front = document.getElementById('fcFront');
+        const back = document.getElementById('fcBack');
+        if (front && back) {
+            if (flashcardFlipped) {
+                front.classList.add('hidden');
+                back.classList.remove('hidden');
+            } else {
                 front.classList.remove('hidden');
                 back.classList.add('hidden');
             }
-            
-            document.getElementById('fcCategory').innerText = q.category;
-            document.getElementById('fcQuestionText').innerHTML = q.text;
-            document.getElementById('fcAnswerTextHeader').innerHTML = q.options[q.correctIndex];
-            document.getElementById('fcAnswerTextBody').innerHTML = q.explanation || '';
-            document.getElementById('flashCardCount').innerText = `כרטיסייה ${flashcardIndex + 1} מתוך ${currentFiltered.length}`;
-            renderMathElements();
         }
+    }
 
-        function flipFlashcard() {
-            flashcardFlipped = !flashcardFlipped;
-            const front = document.getElementById('fcFront');
-            const back = document.getElementById('fcBack');
-            if (front && back) {
-                if (flashcardFlipped) {
-                    front.classList.add('hidden');
-                    back.classList.remove('hidden');
-                } else {
-                    front.classList.remove('hidden');
-                    back.classList.add('hidden');
-                }
-            }
-        }
+    function nextFlashcard() { 
+        if (flashcardIndex < currentFiltered.length - 1) { 
+            flashcardIndex++; renderFlashcard(); 
+        } 
+    }
+    function prevFlashcard() { 
+        if (flashcardIndex > 0) { 
+            flashcardIndex--; renderFlashcard(); 
+        } 
+    }
 
-        function nextFlashcard() { 
-            if (flashcardIndex < currentFiltered.length - 1) { 
-                flashcardIndex++; renderFlashcard(); 
-            } 
-        }
-        function prevFlashcard() { 
-            if (flashcardIndex > 0) { 
-                flashcardIndex--; renderFlashcard(); 
-            } 
-        }
-
-        window.onload = function() { 
-            document.getElementById('totalQuestionsCount').innerText = baseQuestions.length; 
-        };
+    window.onload = function() { 
+        document.getElementById('totalQuestionsCount').innerText = baseQuestions.length; 
+    };
+    </script>
 </body>
 </html>

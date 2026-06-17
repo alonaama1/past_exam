@@ -2547,7 +2547,33 @@ function applyFilters() {
             }
             renderMathElements();
         }
+function checkPracticeAnswer(selectedIdx, btn, q) {
+            const correctIdx = activePracShuffled.correctIndex;
+            const btns = document.getElementById('pracOptions').querySelectorAll('button');
+            
+            btns.forEach((b, i) => {
+                b.onclick = null; // מונע לחיצה כפולה
+                if (i === correctIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-green-500 bg-green-950/20 text-green-300 font-bold flex items-center justify-between";
+                else if (i === selectedIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-red-500 bg-red-950/20 text-red-300 font-bold flex items-center justify-between";
+                else b.className = "w-full text-right p-4 rounded-xl border border-slate-800 bg-slate-950 opacity-40 flex items-center justify-between";
+            });
 
+            if (!statistics.answered[q.id]) {
+                statistics.answered[q.id] = true;
+                if (selectedIdx === correctIdx) statistics.correct++;
+                else statistics.wrong++;
+                document.getElementById('correctCounter').innerText = statistics.correct;
+                document.getElementById('wrongCounter').innerText = statistics.wrong;
+                
+                const total = statistics.correct + statistics.wrong;
+                const acc = Math.round((statistics.correct / total) * 100);
+                document.getElementById('globalAccuracyVal').innerText = acc + "%";
+            }
+
+            document.getElementById('explanationText').innerHTML = q.explanation;
+            document.getElementById('explanationBox').classList.remove('hidden');
+            renderMathElements();
+        }
         function nextQuestion() {
             if (practiceIndex < currentFiltered.length - 1) { 
                 practiceIndex++; 

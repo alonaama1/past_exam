@@ -141,9 +141,28 @@
                         <h4 class="font-extrabold text-xs text-emerald-400 mb-2">💡 הסבר קליני:</h4>
                         <p id="explanationText" class="text-sm text-slate-300"></p>
                     </div>
-                    <div class="flex justify-between mt-8 pt-6 border-t border-slate-800">
-                        <button onclick="prevQuestion()" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:bg-slate-800">← הקודם</button>
-                        <button onclick="nextQuestion()" class="px-5 py-2.5 text-xs font-bold rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white">הבא →</button>
+                  <div class="flex justify-between mt-8 pt-6 border-t border-slate-800">
+                        <button onclick="prevQuestion()" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:bg-slate-800 transition-all">← הקודם</button>
+                        <button id="pracNextBtn" onclick="nextQuestion()" class="px-5 py-2.5 text-xs font-bold rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white transition-all">הבא →</button>
+                    </div>
+                </div>
+
+                <div id="practiceReportCard" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center space-y-6">
+                    <div class="text-4xl mb-2">🎯</div>
+                    <h2 class="text-2xl font-black text-white">סיימת את התרגול בהצלחה!</h2>
+                    <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto">
+                        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                            <span class="text-[10px] text-slate-400">אחוז הצלחה</span>
+                            <span id="pracSummaryScore" class="text-3xl font-black text-cyan-400 block">0%</span>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                            <span class="text-[10px] text-slate-400">תשובות נכונות</span>
+                            <span id="pracSummaryCorrect" class="text-3xl font-black text-emerald-400 block">0</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-3 max-w-sm mx-auto mt-4">
+                        <button onclick="restartPractice()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3.5 rounded-xl transition-all">התחלת תרגול מחדש 🔄</button>
+                        <button onclick="exitSessionToHome()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3.5 rounded-xl transition-all">חזרה למסך הבית 🏠</button>
                     </div>
                 </div>
 
@@ -2495,7 +2514,7 @@ function applyFilters() {
         }
 
         // --- PRACTICE ---
-        function renderPractice() {
+      function renderPractice() {
             if (currentFiltered.length === 0) return;
             const q = currentFiltered[practiceIndex];
             const container = document.getElementById('pracOptions');
@@ -2515,42 +2534,65 @@ function applyFilters() {
                 btn.innerHTML = `<span class="pl-4">${text}</span><span class="font-mono bg-slate-900 px-2 py-0.5 rounded text-slate-500">${idx + 1}</span>`;
                 container.appendChild(btn);
             });
-            renderMathElements();
-        }
 
-        function checkPracticeAnswer(selectedIdx, btn, q) {
-            const correctIdx = activePracShuffled.correctIndex;
-            const btns = document.getElementById('pracOptions').querySelectorAll('button');
-            
-            btns.forEach((b, i) => {
-                b.onclick = null;
-                if (i === correctIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-green-500 bg-green-950/20 text-green-300 font-bold flex items-center justify-between";
-                else if (i === selectedIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-red-500 bg-red-950/20 text-red-300 font-bold flex items-center justify-between";
-                else b.className = "w-full text-right p-4 rounded-xl border border-slate-800 bg-slate-950 opacity-40 flex items-center justify-between";
-            });
-
-            if (!statistics.answered[q.id]) {
-                statistics.answered[q.id] = true;
-                if (selectedIdx === correctIdx) statistics.correct++;
-                else statistics.wrong++;
-                document.getElementById('correctCounter').innerText = statistics.correct;
-                document.getElementById('wrongCounter').innerText = statistics.wrong;
-                
-                const total = statistics.correct + statistics.wrong;
-                const acc = Math.round((statistics.correct / total) * 100);
-                document.getElementById('globalAccuracyVal').innerText = acc + "%";
+            // עדכון הכפתור: אם זו שאלה אחרונה - שנה ל"סיום"
+            const nextBtn = document.getElementById('pracNextBtn');
+            if (nextBtn) {
+                if (practiceIndex === currentFiltered.length - 1) {
+                    nextBtn.innerText = "סיום תרגול 🏁";
+                    nextBtn.className = "px-5 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all";
+                } else {
+                    nextBtn.innerText = "הבא →";
+                    nextBtn.className = "px-5 py-2.5 text-xs font-bold rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white transition-all";
+                }
             }
-
-            document.getElementById('explanationText').innerHTML = q.explanation;
-            document.getElementById('explanationBox').classList.remove('hidden');
             renderMathElements();
         }
 
         function nextQuestion() {
-            if (practiceIndex < currentFiltered.length - 1) { practiceIndex++; renderPractice(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+            if (practiceIndex < currentFiltered.length - 1) { 
+                practiceIndex++; 
+                renderPractice(); 
+                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            } else {
+                showPracticeSummary();
+            }
         }
+
         function prevQuestion() {
-            if (practiceIndex > 0) { practiceIndex--; renderPractice(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+            if (practiceIndex > 0) { 
+                practiceIndex--; 
+                renderPractice(); 
+                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            }
+        }
+
+        function showPracticeSummary() {
+            document.getElementById('practiceContainer').classList.add('hidden');
+            document.getElementById('practiceReportCard').classList.remove('hidden');
+            
+            const total = statistics.correct + statistics.wrong;
+            const acc = total > 0 ? Math.round((statistics.correct / total) * 100) : 0;
+            
+            document.getElementById('pracSummaryScore').innerText = acc + "%";
+            document.getElementById('pracSummaryCorrect').innerText = `${statistics.correct}/${currentFiltered.length}`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function restartPractice() {
+            document.getElementById('practiceReportCard').classList.add('hidden');
+            document.getElementById('practiceContainer').classList.remove('hidden');
+            statistics = { correct: 0, wrong: 0, answered: {} };
+            practiceIndex = 0;
+            renderPractice();
+        }
+
+        function exitSessionToHome() {
+            document.getElementById('mainWorkspace').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            document.getElementById('practiceReportCard').classList.add('hidden');
+            document.getElementById('practiceContainer').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // --- EXAM ---

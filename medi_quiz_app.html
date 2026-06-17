@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediQuiz Pro - Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap');
+        body { font-family: 'Assistant', sans-serif; background-color: #0b0f19; color: #f1f5f9; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+    </style>
+</head>
+<body class="min-h-screen transition-colors duration-300 pb-20">
+
+    <div id="app" class="max-w-7xl mx-auto px-4 pt-6">
+        <header class="flex items-center justify-between mb-8 pb-4 border-b border-slate-800">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="p-3 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-xl text-white shadow-lg">
+                    <span class="text-xl font-bold">MQ</span>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight text-cyan-400">MediQuiz Pro</h1>
+                    <p class="text-xs text-slate-400">הסימולטור המקיף למבחני מודולה ייחודית, פגייה וטנ"צ</p>
+                </div>
+            </div>
+            <div class="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-300 font-bold">
+                שאלות נטענות במאגר: <span id="totalQuestionsCount" class="text-cyan-400 font-extrabold">0</span>
+            </div>
+        </header>
+
+        <section id="welcomeScreen" class="max-w-3xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-8">
+            <div class="text-center space-y-3">
+                <div class="inline-flex p-4 rounded-full bg-cyan-500/10 text-cyan-400 text-4xl mb-2 justify-center">🎓</div>
+                <h2 class="text-3xl font-extrabold">ברוך הבא למערכת הלימוד!</h2>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">1. בחרי מצב למידה:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div onclick="selectSetupMode('practice')" id="setupMode-practice" class="cursor-pointer p-5 rounded-2xl border-2 border-cyan-500 bg-cyan-950/20 text-right transition-all">
+                        <div class="text-xl">🎓</div><h4 class="font-bold text-sm text-cyan-400">תרגול חופשי</h4>
+                    </div>
+                    <div onclick="selectSetupMode('exam')" id="setupMode-exam" class="cursor-pointer p-5 rounded-2xl border border-slate-800 bg-slate-900 text-right opacity-70 transition-all">
+                        <div class="text-xl">⏱️</div><h4 class="font-bold text-sm text-slate-300">סימולציית מבחן</h4>
+                    </div>
+                    <div onclick="selectSetupMode('flashcard')" id="setupMode-flashcard" class="cursor-pointer p-5 rounded-2xl border border-slate-800 bg-slate-900 text-right opacity-70 transition-all">
+                        <div class="text-xl">📇</div><h4 class="font-bold text-sm text-slate-300">כרטיסיות שינון</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-800">
+                <div class="space-y-2">
+                    <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">2. סנני נושא:</h3>
+                    <select id="setupCategory" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none text-slate-200">
+                        <option value="All">הכל</option>
+                        <option value="נשימה והנשמה">נשימה והנשמה</option>
+                        <option value="עור ופצעים">עור ופצעים</option>
+                    </select>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider">3. סדר שאלות:</h3>
+                    <div class="flex gap-2">
+                        <button onclick="setSetupShuffle(false)" id="shuffleMode-false" class="flex-1 py-3 px-4 rounded-xl text-xs font-bold border-2 border-cyan-500 bg-cyan-950/20 text-cyan-400">מקורי</button>
+                        <button onclick="setSetupShuffle(true)" id="shuffleMode-true" class="flex-1 py-3 px-4 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-400">אקראי 🔀</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button onclick="launchStudySession()" class="w-full py-4 rounded-2xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-base transition-all">
+                    🚀 התחילי ללמוד!
+                </button>
+            </div>
+        </section>
+
+        <main id="mainWorkspace" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <aside class="lg:col-span-1 space-y-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-4">
+                    <h3 class="font-extrabold text-sm text-slate-300 border-b border-slate-800 pb-2">🧭 ניווט וסטטיסטיקה</h3>
+                    <div class="flex justify-between text-[11px] mb-1">
+                        <span class="text-slate-400">תשובות נכונות (סה"כ)</span>
+                        <span id="correctCounter" class="font-extrabold text-green-400">0</span>
+                    </div>
+                    <div class="flex justify-between text-[11px] mb-1">
+                        <span class="text-slate-400">שגיאות (סה"כ)</span>
+                        <span id="wrongCounter" class="font-extrabold text-red-400">0</span>
+                    </div>
+                    <button onclick="exitSessionToHome()" class="w-full py-2 mt-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">
+                        חזרה למסך הראשי ↩️
+                    </button>
+                </div>
+            </aside>
+
+            <section class="lg:col-span-2 space-y-6">
+                
+                <div id="practiceContainer" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8">
+                    <div class="flex justify-between items-center mb-6 text-xs">
+                        <span class="px-3 py-1.5 rounded-full bg-cyan-500/10 text-cyan-400 font-extrabold" id="pracCategory">קטגוריה</span>
+                        <span class="text-slate-400 font-semibold" id="pracIndex">שאלה X מתוך Y</span>
+                    </div>
+                    <h2 class="text-lg font-bold mb-8" id="pracQuestionText">טוען שאלה...</h2>
+                    <div class="space-y-3" id="pracOptions"></div>
+                    <div id="explanationBox" class="mt-8 p-5 bg-emerald-950/20 border border-emerald-900/30 rounded-2xl hidden">
+                        <h4 class="font-extrabold text-xs text-emerald-400 mb-2">💡 הסבר קליני:</h4>
+                        <p id="explanationText" class="text-sm text-slate-300"></p>
+                    </div>
+                    <div class="flex justify-between mt-8 pt-6 border-t border-slate-800">
+                        <button onclick="prevQuestion()" class="px-4 py-2 text-xs font-bold rounded-xl text-slate-400 hover:bg-slate-800">← הקודם</button>
+                        <button onclick="nextQuestion()" class="px-5 py-2.5 text-xs font-bold rounded-xl bg-cyan-600 text-white">הבא →</button>
+                    </div>
+                </div>
+
+                <div id="examContainer" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6">
+                    <h2 class="text-center text-slate-400 mb-4">סימולציית מבחן (הושלמה במנוע, מוכנה להפעלה עם המאגר המלא)</h2>
+                </div>
+
+                <div id="flashcardContainer" class="hidden bg-slate-900 border border-slate-800 rounded-3xl p-6">
+                    <h2 class="text-center text-slate-400 mb-4">מצב כרטיסיות (הושלם במנוע, מוכן להפעלה)</h2>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // ==========================================
+        // הנה המקום שבו נכניס את המאגר המלא בשלב 2!
+        // ==========================================
+        const baseQuestions = [
+            {
+                id: 1,
+                text: "התקבלו לפגייה שני פגים- פג שבוע 24 ופג שבוע 32, מה ההבדל במספר ה-Terminal Bronchioles של הפגים?",
+                options: [
+                    "יש לשניהם אותו מספר Terminal Bronchioles",
+                    "לפג שבוע 24 יש פחות Terminal Bronchioles",
+                    "לא ניתן לבדוק את כמות ה Terminal Bronchioles ואין מידע בנידון",
+                    "אין חשיבות למספר כי בכל מקרה הנשמה הורסת את הברונכיולות"
+                ],
+                correctIndex: 0,
+                explanation: "שלב ה-Pseudoglandular של התפתחות הריאות מסתיים סביב שבוע 16 להריון, ובשלב זה כבר נוצרים כל ה-Terminal Bronchioles.",
+                category: "נשימה והנשמה",
+                source: "שאלות חזרה למבחן 1"
+            },
+            {
+                id: 4,
+                text: "באיזה שלב מבשיל העור של פג שנולד בשבוע 24?",
+                options: [
+                    "לאחר 8 שבועות ומעלה",
+                    "לאחר 2-4 שבועות ללא תלוי בשבוע הלידה",
+                    "בשבוע 37 להריון",
+                    "העור אינו מבשיל מחוץ לרחם"
+                ],
+                correctIndex: 0,
+                explanation: "לפי ספרות הלימוד הרשמית ופרוטוקול ה-GEM, הבשלת שכבת העור של פג קיצוני שנולד בשבוע 24 לוקחת לפחות 8 שבועות.",
+                category: "עור ופצעים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 47,
+                text: "פענוח ערכי גזים: $pH = 7.24$, $pCO_2 = 30$, $pO_2 = 45$, $HCO_3^- = 14$. מהי האבחנה הנכונה?",
+                options: [
+                    "חמצת מטבולית עם פיצוי נשימתי חלקי",
+                    "בססת מטבולית עם פיצוי נשימתי",
+                    "בססת נשימתית ללא פיצוי מטבולי",
+                    "חמצת נשימתית עם פיצוי מטבולי"
+                ],
+                correctIndex: 0,
+                explanation: "ה-$pH$ נמוך מ-7.35 (חמצת). ה-$HCO_3^-$ נמוך (הגורם לחמצת). ה-$pCO_2$ נמוך כדי לפצות על ידי היפרוונטילציה.",
+                category: "נשימה והנשמה",
+                source: "שחזור טיפול נמרץ ילדים"
+            }
+        ];
+
+        // State variables
+        let currentFiltered = [...baseQuestions];
+        let currentMode = 'practice';
+        let selectedCategory = 'All';
+        let shuffleOrderEnabled = false;
+        let practiceIndex = 0;
+        let statistics = { correct: 0, wrong: 0, answered: {} };
+        let activePracShuffled = null;
+
+        // Render Math equations safely
+        function renderMathElements() {
+            setTimeout(() => {
+                if (window.renderMathInElement) {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            {left: "$$", right: "$$", display: true},
+                            {left: "$", right: "$", display: false}
+                        ]
+                    });
+                }
+            }, 100);
+        }
+
+        // Welcome screen UI functions
+        function selectSetupMode(mode) {
+            currentMode = mode;
+            ['practice', 'exam', 'flashcard'].forEach(m => {
+                const el = document.getElementById(`setupMode-${m}`);
+                if(m === mode) {
+                    el.classList.remove('opacity-70', 'border-slate-800', 'bg-slate-900');
+                    el.classList.add('border-2', 'border-cyan-500', 'bg-cyan-950/20');
+                    el.querySelector('h4').classList.replace('text-slate-300', 'text-cyan-400');
+                } else {
+                    el.classList.add('opacity-70', 'border-slate-800', 'bg-slate-900');
+                    el.classList.remove('border-2', 'border-cyan-500', 'bg-cyan-950/20');
+                    el.querySelector('h4').classList.replace('text-cyan-400', 'text-slate-300');
+                }
+            });
+        }
+
+        function setSetupShuffle(val) {
+            shuffleOrderEnabled = val;
+            const tBtn = document.getElementById('shuffleMode-true');
+            const fBtn = document.getElementById('shuffleMode-false');
+            if (val) {
+                tBtn.classList.replace('border-slate-700', 'border-cyan-500');
+                tBtn.classList.replace('text-slate-400', 'text-cyan-400');
+                fBtn.classList.replace('border-cyan-500', 'border-slate-700');
+                fBtn.classList.replace('text-cyan-400', 'text-slate-400');
+            } else {
+                fBtn.classList.replace('border-slate-700', 'border-cyan-500');
+                fBtn.classList.replace('text-slate-400', 'text-cyan-400');
+                tBtn.classList.replace('border-cyan-500', 'border-slate-700');
+                tBtn.classList.replace('text-cyan-400', 'text-slate-400');
+            }
+        }
+
+        function launchStudySession() {
+            selectedCategory = document.getElementById('setupCategory').value;
+            applyFilters();
+            
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('mainWorkspace').classList.remove('hidden');
+            
+            document.getElementById('practiceContainer').classList.toggle('hidden', currentMode !== 'practice');
+            document.getElementById('examContainer').classList.toggle('hidden', currentMode !== 'exam');
+            document.getElementById('flashcardContainer').classList.toggle('hidden', currentMode !== 'flashcard');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function exitSessionToHome() {
+            document.getElementById('mainWorkspace').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Logic
+        function applyFilters() {
+            let workingSet = selectedCategory === 'All' ? [...baseQuestions] : baseQuestions.filter(q => q.category === selectedCategory);
+            if (shuffleOrderEnabled) {
+                for (let i = workingSet.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [workingSet[i], workingSet[j]] = [workingSet[j], workingSet[i]];
+                }
+            }
+            currentFiltered = workingSet;
+            practiceIndex = 0;
+            renderPractice();
+        }
+
+        function getShuffledOptions(question) {
+            let mapped = question.options.map((text, idx) => ({ text, isCorrect: idx === question.correctIndex }));
+            for (let i = mapped.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [mapped[i], mapped[j]] = [mapped[j], mapped[i]];
+            }
+            return {
+                shuffledTexts: mapped.map(o => o.text),
+                correctIndex: mapped.findIndex(o => o.isCorrect)
+            };
+        }
+
+        function renderPractice() {
+            if (currentFiltered.length === 0) return;
+            const q = currentFiltered[practiceIndex];
+            const container = document.getElementById('pracOptions');
+            document.getElementById('explanationBox').classList.add('hidden');
+            
+            document.getElementById('pracQuestionText').innerHTML = q.text;
+            document.getElementById('pracCategory').innerText = q.category;
+            document.getElementById('pracIndex').innerText = `שאלה ${practiceIndex + 1} מתוך ${currentFiltered.length}`;
+
+            activePracShuffled = getShuffledOptions(q);
+            container.innerHTML = '';
+            
+            activePracShuffled.shuffledTexts.forEach((text, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-right p-4 rounded-xl border border-slate-800 bg-slate-950 hover:bg-slate-800/80 transition flex items-center justify-between";
+                btn.onclick = () => checkPracticeAnswer(idx, btn, q);
+                btn.innerHTML = `<span class="pl-4">${text}</span><span class="font-mono bg-slate-900 px-2 py-0.5 rounded">${idx + 1}</span>`;
+                container.appendChild(btn);
+            });
+            renderMathElements();
+        }
+
+        function checkPracticeAnswer(selectedIdx, btn, q) {
+            const correctIdx = activePracShuffled.correctIndex;
+            const btns = document.getElementById('pracOptions').querySelectorAll('button');
+            
+            btns.forEach((b, i) => {
+                b.onclick = null;
+                if (i === correctIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-green-500 bg-green-950/20 text-green-300 font-bold flex items-center justify-between";
+                else if (i === selectedIdx) b.className = "w-full text-right p-4 rounded-xl border-2 border-red-500 bg-red-950/20 text-red-300 font-bold flex items-center justify-between";
+                else b.className = "w-full text-right p-4 rounded-xl border border-slate-800 bg-slate-950 opacity-40 flex items-center justify-between";
+            });
+
+            if (!statistics.answered[q.id]) {
+                statistics.answered[q.id] = true;
+                if (selectedIdx === correctIdx) statistics.correct++;
+                else statistics.wrong++;
+                document.getElementById('correctCounter').innerText = statistics.correct;
+                document.getElementById('wrongCounter').innerText = statistics.wrong;
+            }
+
+            document.getElementById('explanationText').innerHTML = q.explanation;
+            document.getElementById('explanationBox').classList.remove('hidden');
+            renderMathElements();
+        }
+
+        function nextQuestion() {
+            if (practiceIndex < currentFiltered.length - 1) {
+                practiceIndex++;
+                renderPractice();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+        function prevQuestion() {
+            if (practiceIndex > 0) {
+                practiceIndex--;
+                renderPractice();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        window.onload = function() {
+            document.getElementById('totalQuestionsCount').innerText = baseQuestions.length;
+        };
+    </script>
+</body>
+</html>

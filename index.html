@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MediQuiz Pro - iPad Super Stable</title>
+    <style>
+        /* CSS FLAT ARCHITECTURE - ZERO REFLOW LOOPS FOR IOS */
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #151f32;
+            --bg-input: #0b0f19;
+            --text-main: #f1f5f9;
+            --text-muted: #64748b;
+            --primary: #06b6d4;
+            --success: #10b981;
+            --error: #f43f5e;
+            --border: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 12px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        /* LIGHTWEIGHT HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1.5px solid var(--border);
+            margin-bottom: 15px;
+        }
+
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .brand-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* STATS INDICATORS */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .stat-card span {
+            display: block;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        .stat-card strong {
+            font-size: 1.1rem;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* NAVIGATION TABS */
+        .tab-box {
+            display: flex;
+            background-color: var(--bg-card);
+            padding: 3px;
+            border-radius: 10px;
+            gap: 3px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .tab-trigger {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .tab-trigger.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* SIMPLE FILTERS - FLAT SCROLL */
+        .filter-box {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .search-field {
+            width: 100%;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-main);
+            font-size: 0.8rem;
+            outline: none;
+            margin-bottom: 8px;
+        }
+
+        .scroll-wrapper {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .chip {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .chip.active {
+            background-color: rgba(6, 182, 212, 0.15);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* CORE PRACTICE AND EXAM CARDS */
+        .panel-card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 15px;
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .badge-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            margin-bottom: 10px;
+        }
+
+        .cat-badge {
+            background-color: rgba(6, 182, 212, 0.15);
+            color: var(--primary);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 0.95rem;
+            font-weight: bold;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        /* FLAT OPTION BUTTONS */
+        .option-button {
+            width: 100%;
+            text-align: right;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .option-num {
+            background-color: var(--bg-card);
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            padding: 1px 6px;
+            border-radius: 6px;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        /* RESOLUTION BOX */
+        .resolution-box {
+            background-color: rgba(16, 185, 129, 0.05);
+            border: 1px dashed var(--success);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 12px;
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .resolution-title {
+            color: var(--success);
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        /* ACTIONS PANEL */
+        .footer-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            background-color: var(--border);
+            border: none;
+            color: var(--text-main);
+            padding: 8px 14px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+        }
+
+        /* FLASHCARD WRAPPER */
+        .fc-wrapper {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            min-height: 200px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .fc-body {
+            text-align: center;
+            margin: auto 0;
+            font-size: 0.95rem;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        .fc-back-solution {
+            background-color: rgba(16, 185, 129, 0.08);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.8rem;
+            color: #34d399;
+            text-align: right;
+        }
+
+        /* EXAM HEADERS */
+        .exam-header-bar {
+            background-color: #020617;
+            border-radius: 10px;
+            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .exam-grid-bullets {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 6px 0;
+        }
+
+        .bullet-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            font-weight: bold;
+            border: 1px solid var(--border);
+            background-color: var(--bg-input);
+            color: var(--text-muted);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .bullet-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .bullet-btn.answered {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border-color: var(--success);
+        }
+
+        /* POPUP ALERT */
+        #alertToast {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #020617;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+        }
+
+        .hidden { display: none !important; }
+        .text-success { color: var(--success) !important; }
+        .text-error { color: var(--error) !important; }
+        .border-success { border-color: var(--success) !important; }
+        .border-error { border-color: var(--error) !important; }
+        
+        .scroll-wrapper::-webkit-scrollbar,
+        .exam-grid-bullets::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- TOP APP BAR -->
+        <header>
+            <div>
+                <div class="brand-title">MediQuiz Pro</div>
+                <div class="brand-sub">גרסה חיצונית מיוצבת לטאבלטים</div>
+            </div>
+            <div style="text-align: left;">
+                <span id="scorePercent" style="color: var(--primary); font-weight: bold; font-size: 0.85rem;">0%</span>
+                <p style="font-size: 0.6rem; color: var(--text-muted);">הצלחה בתרגול</p>
+            </div>
+        </header>
+
+        <!-- PROGRESS STATS -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <span>תשובות נכונות</span>
+                <strong id="correctCounter" style="color: var(--success);">0</strong>
+            </div>
+            <div class="stat-card">
+                <span>שגיאות</span>
+                <strong id="wrongCounter" style="color: var(--error);">0</strong>
+            </div>
+            <div class="stat-card">
+                <span>סה"כ שאלות</span>
+                <strong id="totalDB" style="color: var(--primary);">0</strong>
+            </div>
+        </div>
+
+        <!-- TABS NAV -->
+        <div class="tab-box">
+            <button onclick="switchMode('practice')" id="tab-practice" class="tab-trigger active">🎓 תרגול חופשי</button>
+            <button onclick="switchMode('exam')" id="tab-exam" class="tab-trigger">⏱️ סימולציית מבחן</button>
+            <button onclick="switchMode('flashcard')" id="tab-flashcard" class="tab-trigger">📇 כרטיסיות שינון</button>
+        </div>
+
+        <!-- STABLE SEARCH & CATEGORIES -->
+        <div id="filterSection" class="filter-box">
+            <input oninput="searchQueryUpdated(this.value)" type="text" placeholder="חיפוש מהיר של מונחים רפואיים..." class="search-field">
+            <div class="scroll-wrapper">
+                <button onclick="selectCategory('All')" id="cat-All" class="chip active">הכל</button>
+                <button onclick="selectCategory('נשימה והנשמה')" id="cat-נשימה והנשמה" class="chip">נשימה והנשמה</button>
+                <button onclick="selectCategory('רפואת פגים')" id="cat-רפואת פגים" class="chip">רפואת פגים</button>
+                <button onclick="selectCategory('המערכת הקרדיווסקולרית')" id="cat-המערכת הקרדיווסקולרית" class="chip">קרדיווסקולרי</button>
+                <button onclick="selectCategory('עור ופצעים')" id="cat-עור ופצעים" class="chip">עור ופצעים</button>
+                <button onclick="selectCategory('אלקטרוליטים ומטבוליזם')" id="cat-אלקטרוליטים ומטבוליזם" class="chip">אלקטרוליטים</button>
+                <button onclick="selectCategory('טיפול נמרץ ילדים')" id="cat-טיפול נמרץ ילדים" class="chip">טנ"צ ילדים</button>
+            </div>
+        </div>
+
+        <!-- PRACTICE INTERACTIVE CARD -->
+        <div id="practiceContainer" class="panel-card">
+            <div class="badge-row">
+                <span id="pracCategory" class="cat-badge">נושא</span>
+                <span id="pracProgressTracker" style="color: var(--text-muted);">טוען...</span>
+            </div>
+
+            <div id="pracQuestion" class="question-text">טוען שאלה ראשונה...</div>
+
+            <div id="pracOptions" class="options-list">
+                <!-- Dynamically populated -->
+            </div>
+
+            <div id="resolutionBox" class="resolution-box hidden">
+                <div class="resolution-title">💡 הסבר פיזיולוגי ומדעי:</div>
+                <div id="resolutionText">תוכן ההסבר המפורט...</div>
+            </div>
+
+            <div class="footer-nav">
+                <button onclick="prevPrac()" class="btn">← שאלה קודמת</button>
+                <span id="pracSource" style="font-size: 0.65rem; color: var(--text-muted);">מקור</span>
+                <button onclick="nextPrac()" class="btn btn-primary">השאלה הבאה →</button>
+            </div>
+        </div>
+
+        <!-- EXAM CONTROLLER CARD -->
+        <div id="examContainer" class="hidden">
+            <div class="exam-header-bar">
+                <div style="font-weight: bold; color: var(--error);" id="examTimer">זמן נותר: 60:00</div>
+                <div id="examProgressLabel">שאלה 1/50</div>
+                <button onclick="submitExam()" class="btn" style="background-color: var(--error); color: white; padding: 4px 8px;">הגשה 🏁</button>
+            </div>
+
+            <div id="examQuestionCard" class="panel-card">
+                <div id="examQuestionText" class="question-text">שאלת בחינה תיטען פה...</div>
+                <div id="examOptionsList" class="options-list">
+                    <!-- Options -->
+                </div>
+
+                <div class="footer-nav">
+                    <button onclick="prevExam()" class="btn">← שאלה קודמת</button>
+                    <button onclick="nextExam()" class="btn btn-primary">שאלה הבאה →</button>
+                </div>
+            </div>
+
+            <div class="exam-grid-bullets" id="examBulletsNav">
+                <!-- Bullet list -->
+            </div>
+
+            <!-- EXAM SCORE REPORT -->
+            <div id="examReportCard" class="panel-card hidden" style="text-align: center; padding: 25px 15px;">
+                <div style="font-size: 2.5rem; margin-bottom: 8px;">🏆</div>
+                <h2 style="font-size: 1.2rem; margin-bottom: 12px;">סיכום סימולציית מבחן</h2>
+                
+                <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;">
+                    <div style="background: var(--bg-input); padding: 10px; border-radius: 8px; width: 90px;">
+                        <span style="font-size: 0.6rem; color: var(--text-muted); display: block;">ציון סופי</span>
+                        <strong id="finalExamScore" style="font-size: 1.3rem; color: var(--primary);">0</strong>
+                    </div>
+                    <div style="background: var(--bg-input); padding: 10px; border-radius: 8px; width: 90px;">
+                        <span style="font-size: 0.6rem; color: var(--text-muted); display: block;">נכונות</span>
+                        <strong id="finalExamCorrect" style="font-size: 1.3rem; color: var(--success);">0/50</strong>
+                    </div>
+                </div>
+
+                <p id="examFeedback" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.5; text-align: right;"></p>
+                <button onclick="startExamSim()" class="btn btn-primary" style="width: 100%; padding: 10px;">בצעי מבחן חדש 🔄</button>
+            </div>
+        </div>
+
+        <!-- FLASHCARDS SHUFFLER CARD -->
+        <div id="flashcardContainer" class="hidden">
+            <div class="fc-wrapper" onclick="toggleFlashcardView()">
+                <div>
+                    <span id="fcCategory" class="cat-badge" style="font-size: 0.6rem;">נושא</span>
+                </div>
+                
+                <!-- Front Side -->
+                <div id="fcFront" class="fc-body">טוען שאלה לשינון...</div>
+
+                <!-- Back Side -->
+                <div id="fcBack" class="fc-body hidden" style="text-align: right; width: 100%;">
+                    <div class="fc-back-solution" id="fcAnswerHeader">תשובה</div>
+                    <p id="fcAnswerBody" style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; font-weight: normal; margin-top: 10px;"></p>
+                </div>
+
+                <div style="text-align: center; font-size: 0.65rem; color: var(--text-muted); margin-top: 10px;">
+                    גע/י על המסך כאן כדי להפוך את הכרטיסייה 🔄
+                </div>
+            </div>
+
+            <div class="footer-nav" style="margin-top: 12px;">
+                <button onclick="prevFlashcard()" class="btn">← הקודם</button>
+                <span id="fcIndex" style="font-size: 0.7rem; color: var(--text-muted);">כרטיסייה 1/50</span>
+                <button onclick="nextFlashcard()" class="btn">הבא →</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="alertToast">הודעה</div>
+
+    <!-- HIGH-STABILITY LIGHTWEIGHT DATABASE ENGINE -->
+    <script>
+        // Clean JSON data of study questions
+        const baseQuestions = [
+            {
+                id: 1,
+                text: "התקבלו לפגייה שני פגים- פג שבוע 24 ופג שבוע 32, מה ההבדל במספר ה-Terminal Bronchioles של הפגים?",
+                options: [
+                    "יש לשניהם אותו מספר Terminal Bronchioles",
+                    "לפג שבוע 24 יש פחות Terminal Bronchioles",
+                    "לא ניתן לבדוק את כמות ה Terminal Bronchioles ואין מידע בנידון",
+                    "אין חשיבות למספר כי בכל מקרה הנשמה הורסת את הברונכיולות"
+                ],
+                correctIndex: 0,
+                explanation: "שלב ה-Pseudoglandular של התפתחות הריאות מסתיים סביב שבוע 16 להריון, ובשלב זה כבר נוצרים כל ה-Terminal Bronchioles. לשני הפגים יש מספר זהה של ברונכיולות טרמינליות.",
+                category: "נשימה והנשמה",
+                source: "שאלות חזרה למבחן 1"
+            },
+            {
+                id: 2,
+                text: "כוריאואמניוניטיס (Chorioamnionitis). מה נכון מהבאים?",
+                options: [
+                    "מוריד RDS, מעלה BPD ו-PVL",
+                    "לא משפיע על BPD",
+                    "מעלה BPD ולא משפיע על RDS ו-IVH",
+                    "מוריד RDS, BPD ו-IVH"
+                ],
+                correctIndex: 0,
+                explanation: "דלקת של קרומי השפיר גורמת לעלייה ברמת הציטוקינים והקורטיזול העוברי, מה שמאיץ ייצור סורפקטנט ומפחית סיכון ל-RDS. עם זאת, התהליך הדלקתי גורם לנזק כרוני לריאות (BPD) ולרקמת המוח (PVL).",
+                category: "רפואת פגים",
+                source: "שאלות חזרה למבחן 1"
+            },
+            {
+                id: 3,
+                text: "נולד ילוד בשבוע 36 בלידה ספונטנית לאמא סוכרתית, מראה סימני מצוקה נשימתית. מהי האבחנה המתאימה ביותר?",
+                options: [
+                    "RDS (Respiratory Distress Syndrome)",
+                    "TTN (Transient Tachypnea of the Newborn)",
+                    "PNEUMOTHORAX",
+                    "PNEUMONIA"
+                ],
+                correctIndex: 0,
+                explanation: "סוכרת אימהית מעכבת את הבשלת הריאות של העובר (היפר-אינסולינמיה מעכב את פעילות הקורטיזול והפקת הסורפקטנט על ידי תאי אלבאולי סוג 2), ולכן יילודים לאימהות סוכרתיות נמצאים בסיכון מוגבר לפתח RDS גם בשבועות מתקדמים.",
+                category: "נשימה והנשמה",
+                source: "שאלות חזרה למבחן 1"
+            },
+            {
+                id: 4,
+                text: "באיזה שלב מבשיל העור של פג שנולד בשבוע 24?",
+                options: [
+                    "לאחר 2-4 שבועות ללא תלות בשבוע הלידה",
+                    "לאחר 8 שבועות",
+                    "בשבוע 37 להריון",
+                    "העור אינו מבשיל מחוץ לרחם"
+                ],
+                correctIndex: 0,
+                explanation: "לאחר הלידה, עור הפג נחשף לאוויר ולסביבה יבשה, מה שגורם להאצה מהירה של תהליך הקרטיניזציה והבשלת שכבת ה-Stratum Corneum. תהליך זה אורך בין שבועיים לארבעה שבועות ללא קשר לגיל ההריון שבו נולד.",
+                category: "עור ופצעים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 5,
+                text: "מה יש לעשות עם פצע יבש אצל פג או יילוד?",
+                options: [
+                    "הרטב אותו (שמירה על סביבה לחה)",
+                    "חטא אותו באלכוהול בריכוז גבוה",
+                    "בצע לו הטרה מיידית ואגרסיבית",
+                    "חבוש אותו בחבישה לוחצת ואוטמת"
+                ],
+                correctIndex: 0,
+                explanation: "ריפוי פצעים מודרני מבוסס על סביבה לחה (Moist wound healing). סביבה לחה מעודדת את נדידת תאי האפיתל, מונעת כאב ומקצרת את זמן הריפוי.",
+                category: "עור ופצעים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 6,
+                text: "יילוד לאחר ביצוע Hyperoxic Test מציג תוצאה של PO2 בערך של 89 mmHg. מה משמעות הממצא?",
+                options: [
+                    "התוצאה אינה תקינה ויכולה להעיד על מום לב כחלוני (Shunt)",
+                    "הבדיקה תקינה לחלוטין",
+                    "מדובר בפגיעה ריאתית חריפה במהלך הלידה בלבד",
+                    "מדובר בדיכוי נשימתי משני לטיפול תרופתי"
+                ],
+                correctIndex: 0,
+                explanation: "במבחן היפראוקסי מחמצנים את היילוד ב-100% חמצן. במידה וערך ה-PO2 נותר מתחת ל-100 (כמו 89 במקרה זה), הדבר מעיד על קיומו של דלף מימין לשמאל (מום לב כחלוני).",
+                category: "המערכת הקרדיווסקולרית",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 7,
+                text: "מתי מתחילים להעשיר חלב אם ב-HMF (Human Milk Fortifier)?",
+                options: [
+                    "כאשר הוא מגיע לנפח כלכלה אנטרלית של 80 מל/קג/יום",
+                    "כאשר הפג שוקל מעל 1200 גרם",
+                    "כאשר הפג שוקל מעל 1000 גרם",
+                    "כאשר הפג צורך מעל 100 מ\"ל חלב ביום"
+                ],
+                correctIndex: 0,
+                explanation: "מתחילים להעשיר את חלב האם ב-HMF כאשר הפג מסתגל היטב להזנה אנטרלית ומגיע לנפח של כ-80 מ\"ל/ק\"ג/יום.",
+                category: "רפואת פגים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 8,
+                text: "מכמה שכבות עיקריות בנוי העור בגוף האדם?",
+                options: [
+                    "3 שכבות",
+                    "5 שכבות",
+                    "2 שכבות",
+                    "שכבה אחת"
+                ],
+                correctIndex: 0,
+                explanation: "העור מורכב מ-3 שכבות עיקריות: אפידרמיס (Epidermis), דרמיס (Dermis) והיפודרמיס (Hypodermis).",
+                category: "עור ופצעים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 9,
+                text: "מהי השכבה האמצעית של העור?",
+                options: [
+                    "דרמיס",
+                    "היפודרמיס",
+                    "שומן תת-עורי",
+                    "אפידרמיס"
+                ],
+                correctIndex: 0,
+                explanation: "הדרמיס (Dermis) הוא שכבת העור האמצעית המכילה כלי דם, קצות עצבים, זקיקי שיער ובלוטות זיעה.",
+                category: "עור ופצעים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 10,
+                text: "כיצד נראה עור של פג שנולד בשבוע 24 להריון?",
+                options: [
+                    "אדום, שקוף, מקומט ובמרקם ג'לטיני",
+                    "ורוד וחלק",
+                    "שמן ועבה במיוחד",
+                    "חיוור ובעל קשקשת יבשה"
+                ],
+                correctIndex: 0,
+                explanation: "בגלל חוסר בשלות קיצוני וחוסר בשכבת ה-Stratum Corneum ובשומן תת-עורי, עורו של פג בשבוע 24 נראה אדום מאוד, שקוף, מקומט ובמרקם הדומה לג'לי.",
+                category: "עור ופצעים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 11,
+                text: "מהו הטיפול הראשוני ב-PDA (Patent Ductus Arteriosus) סימפטומטי אצל פגים?",
+                options: [
+                    "הטיפול ב-PDA סימפטומטי ראשוני הוא על NSAIDs (כמו אינדומתצין או איבופרופן)",
+                    "ביצוע צנתור לסגירת הדוקטוס",
+                    "ניתוח קשירה (Ligation) דחוף",
+                    "הטיפול ב-PDA בפגים אינו יעיל ולכן הטיפול הוא סימפטומטי בלבד"
+                ],
+                correctIndex: 0,
+                explanation: "הטיפול הראשוני המקובל ב-PDA הגורם לסימפטומים המודינמיים הוא מעכבי פרוסטגלנדינים כגון NSAIDs. הם חוסמים את האנזים COX ומעודדים כיווץ וסגירה של הדוקטוס.",
+                category: "המערכת הקרדיווסקולרית",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 12,
+                text: "מה אופייני לילוד המאובחן עם מום לב כחלוני?",
+                options: [
+                    "התעייפות מהירה במאמץ",
+                    "קושי בסנכרון מציצה בליעה נשימה ללא התעייפות מהירה",
+                    "המלצה קלינית גורפת לכלכלה אטרופית בלבד",
+                    "טמפרטורת גוף מוגברת בקביעות"
+                ],
+                correctIndex: 0,
+                explanation: "יילודים עם מומי לב כחלוניים סובלים מהיפוקסמיה כרונית, מה שמביא למאמץ לבבי ונשימתי כביר. הם מתעייפים מהר מאוד במהלך האכלה ומציגים קושי משמעותי לינוק.",
+                category: "המערכת הקרדיווסקולרית",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 13,
+                text: "מתי מומלץ להתחיל כלכלה אטרופית (Minimal Enteral Nutrition) בפגים?",
+                options: [
+                    "בסמוך ככל הניתן ללידה",
+                    "רק כאשר הפג מראה סימני מוכנות התנהגותיים מלאים לאכילה",
+                    "מיד בסיום הטיפול ב-TPN (כלכלה פראנטרלית)",
+                    "בשבוע 34 ומעלה בלבד"
+                ],
+                correctIndex: 0,
+                explanation: "כלכלה אטרופית נועדה להבשיל את רירית המעי ולא להוות מקור קלורי עיקרי. התחלתה בסמוך ככל הניתן ללידה (כשהפג יציב) מסייעת במניעת אטרופיה של המעי ומורידה את הסיכון ל-NEC.",
+                category: "רפואת פגים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 14,
+                text: "מה נכון לגבי קורקטציה של האורטה (Coarctation of the Aorta)?",
+                options: [
+                    "מתן פרוסטין משמר חולים אלו על ידי השארת הדוקטוס פתוח",
+                    "לחץ הדם בגפיים תחתונות יהיה גבוה מגפיים עליונות",
+                    "מתן NSAID הינו הטיפול בשבוע הראשון לחולים אלו",
+                    "נראה תמיד כחלון מרכזי מובהק ללא הבדל בין חלקי הגוף"
+                ],
+                correctIndex: 0,
+                explanation: "קורקטציה של האורטה היא מום תלוי דוקטוס (Ductus-dependent). כאשר הדוקטוס נסגר, יש ירידה קריטית בפרפוזיה לגוף התחתון. מתן פרוסטין פותח מחדש את הדוקטוס ומציל חיים.",
+                category: "המערכת הקרדיווסקולרית",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 15,
+                text: "איזה מבין כלי הדם הבאים הוא בעל רוויון החמצן (Oxygen Saturation) הגבוה ביותר במחזור הדם העוברי?",
+                options: [
+                    "הוריד הטבורי",
+                    "האורטה העולה",
+                    "העורק הטבורי",
+                    "האורטה היורדת"
+                ],
+                correctIndex: 0,
+                explanation: "הוריד הטבורי נושא דם מחומצן היטב המגיע ישירות מהשליה לעובר (רוויון חמצן של כ-80%). שאר כלי הדם העובריים מכילים דם מעורבב בעל רמות רוויון נמוכות יותר.",
+                category: "המערכת הקרדיווסקולרית",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 16,
+                text: "מהי ההגדרה המדויקת של פגות מאוחרת (Late Preterm)?",
+                options: [
+                    "Late preterm 34-37 (ספציפית 34 עד 36.6 שבועות)",
+                    "Late preterm 32-35",
+                    "Late preterm 34-36",
+                    "Late preterm 35-37"
+                ],
+                correctIndex: 0,
+                explanation: "פגות מאוחרת מוגדרת כיילוד שנולד בין השבועות 34 (0/7) ועד שבוע 36 (6/7) להריון.",
+                category: "רפואת פגים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 17,
+                text: "מה נכון לגבי תסמונת שאיפת מקוניום (MAS - Meconium Aspiration Syndrome)?",
+                options: [
+                    "מחלה של ילודים במועד ואחרי המועד",
+                    "בדרך כלל מופיע אצל יולדים לפני שבוע 36",
+                    "מחלה אשר לרוב חולפת ואינה מצריכה טיפול",
+                    "היא אינה פוגעת בפרפוזיה הריאתית"
+                ],
+                correctIndex: 0,
+                explanation: "הפרשת מקוניום ברחם מתרחשת לרוב בתגובה לסטרס היפוקסי ומצריכה הבשלה של מערכת העיכול והרפלקסים העצביים, תהליך שאינו נפוץ אצל פגים צעירים.",
+                category: "נשימה והנשמה",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 18,
+                text: "מה נכון לגבי מבנה העור של פג קטן?",
+                options: [
+                    "נתלש בקלות עקב קשר חלש בין אפידרמיס לדרמיס",
+                    "העור עמיד מאוד ואין סכנה בשימוש בדבקים רגילים",
+                    "מחייב במריחת משמנים",
+                    "עבה ועמיד"
+                ],
+                correctIndex: 0,
+                explanation: "החיבור בין האפידרמיס לדרמיס בפג הוא חלש ועדין מאוד. הסרת מדבקות או שימוש בדבקים רפואיים חזקים עלולה לגרום לתלישת העור (Skin stripping) ולפציעה משמעותית.",
+                category: "עור ופצעים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 19,
+                text: "מהי ההגדרה של פגות קיצונית או משקל לידה קיצוני נמוך (ELBW)?",
+                options: [
+                    "פג שנולד מתחת ל1000 גר'",
+                    "פג שנולד בשבוע 22-23",
+                    "פג שנולד פחות מ- 2000 גר'",
+                    "כל תינוק מתחת לשבוע 35."
+                ],
+                correctIndex: 0,
+                explanation: "משקל לידה קיצוני נמוך (Extremely Low Birth Weight - ELBW) מוגדר כמשקל לידה הנמוך מ-1000 גרם.",
+                category: "רפואת פגים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 20,
+                text: "מה נכון לגבי פרוטוקול מינימאל הנדלינג (Minimal Handling) בפגים?",
+                options: [
+                    "שמירה על מינימום תזוזה וסטרס למניעת IVH",
+                    "מותר להוציא את הפג לקנגרו בלבד ללא הגבלה",
+                    "כל פג בתוך אינקובטור נמצא במינימל הנדלינג",
+                    "מיושם לכל פג באינקובטור באופן זהה עד שחרורו"
+                ],
+                correctIndex: 0,
+                explanation: "בפגים קטנים (במיוחד מתחת לשבוע 32) כלי הדם במוח עדינים ביותר. תנודות מהירות בלחץ הדם עקב סטרס או תנועות חדות עלולות לגרום ל-IVH. פרוטוקול מינימאל הנדלינג מפחית גירויים אלו באופן מובנה בשבועות הראשונים.",
+                category: "רפואת פגים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 21,
+                text: "מה נכון לגבי שיטת הקנגורו (Kangaroo Care) בפגייה?",
+                options: [
+                    "מחזק קשר בין הורה לפג",
+                    "מעלה ברדיקרדיות",
+                    "גורם לאאיבוד חום של הפג",
+                    "מבוצע לצורך הנקה בלבד"
+                ],
+                correctIndex: 0,
+                explanation: "מגע עור-בעור בקנגורו נמצא כמפחית סטרס, מייצב דופק ונשימה, מסייע בוויסות חום הגוף ומחזק את הקשר ההורי.",
+                category: "רפואת פגים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 22,
+                text: "יילוד נולד בשבוע 37, משקלו 2800 גרם, ער ללא בכי, טונוס רפוי. נראה כחלון כללי, דופק 58 נקישות בדקה, ונצפו 4 נשימות שטוחות. מהו ציון האפגר (Apgar Score) שלו?",
+                options: [
+                    "2",
+                    "8",
+                    "3",
+                    "4.5"
+                ],
+                correctIndex: 0,
+                explanation: "נחשב אפגר: קצב לב מתחת ל-100 (= 1), נשימה איטית/לא סדירה (= 1), טונוס שרירים רפוי (= 0), רפלקסים ללא תגובה (= 0), צבע עור כחול/חיוור לחלוטין (= 0). סה\"כ: 1+1 = 2.",
+                category: "רפואת פגים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 23,
+                text: "כיצד נראה פג שאינו מאורגן מבחינה נוירולוגית ופיזית?",
+                options: [
+                    "גפיים באקסטנציה",
+                    "מכונס",
+                    "משנה תנוחה בעצמו",
+                    "ישן בשקט ובמדדים יציבים"
+                ],
+                correctIndex: 0,
+                explanation: "פג יציב ומאורגן שואף למנח מכונס (פלקיסיה) בדומה למנח העוברי ברחם. מנח של פשיטה (אקסטנציה) של הגפיים מחוץ לגוף מעיד על חוסר בשלות נוירולוגית, חולשת שרירים או סטרס קליני.",
+                category: "רפואת פגים",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 24,
+                text: "מה תפקידו ותכונותיו של הסורפקטנט (Surfactant) בריאות הפג?",
+                options: [
+                    "מוריד נפח פנים של הריאה (מפחית מתח פנים באלבאולי)",
+                    "מעלה תנגודת ראתית",
+                    "מיוצר החל משבוע 18 להריון",
+                    "מיוצר מתאים מסוג 1"
+                ],
+                correctIndex: 0,
+                explanation: "סורפקטנט מיוצר על ידי תאי אלבאולי מסוג 2. תפקידו הפיזיקלי הוא להוריד את מתח הפנים בנאדיות הריאה, מה שמונע תמת ריאתי (Atelectasis) ומאפשר פתיחה קלה יותר של הריאה בשאיפה הבאה.",
+                category: "נשימה והנשמה",
+                source: "שחזור אמצע 2020"
+            },
+            {
+                id: 25,
+                text: "מה נבדק כחלק מאנליזת בדיקת זרע שגרתית?",
+                options: [
+                    "כמות במ\"ל, מורפולוגיה, תנועתיות ונפח",
+                    "רמת הורמון ה-E2 בלבד",
+                    "נוכחות חלבון חופשי וגלוקוז בלבד",
+                    "רמת חומציות (pH) וצבע הנוזל"
+                ],
+                correctIndex: 0,
+                explanation: "בדיקת זרע בוחנת את הפרמטרים הקריטיים לפוריות: נפח פליטה, ריכוז תאי הזרע, אחוז התאים בעלי תנועתיות תקינה ואחוז התאים בעלי מורפולוגיה (מבנה) תקינה.",
+                category: "אלקטרוליטים ומטבוליזם",
+                source: "שחזור אמצע ייחודית"
+            },
+            {
+                id: 26,
+                text: "מהו הטיפול המועדף ב-PIE (Pulmonary Interstitial Emphysema) אצל פגים?",
+                options: [
+                    "הנשמה ב-HFV",
+                    "מתן הנשמה בלחץ שלילי ממושך",
+                    "מתן מנה כפולה של סורפקטנט בקצב מהיר",
+                    "ניקוז חזה דחוף באמצעות מחט"
+                ],
+                correctIndex: 0,
+                explanation: "ב-PIE יש דליפה של אוויר לתוך הרקמה האינטרסטיציאלית של הריאה. הנשמה בתדר גבוה (HFV) משתמשת בנפחי הנשמה קטנים מאוד ולחצים נמוכים יותר, מה שמאפשר לריאה להחלים.",
+                category: "נשימה והנשמה",
+                source: "שחזור אמצע ייחודית"
+            },
+            {
+                id: 27,
+                text: "מהו הסיבוך מסכן החיים והקשה ביותר בהנשמה פולשנית ממושכת של יילודים?",
+                options: [
+                    "SUB GLOTIC STENOSIS",
+                    "דימום ריאתי קל החולף ספונטנית",
+                    "היפרקפניה זמנית",
+                    "פגיעה קלה ברירית האף עקב הטובוס"
+                ],
+                correctIndex: 0,
+                explanation: "היצרות תת-קולית (Subglottic Stenosis) היא סיבוך קשה הנובע מטראומה מקומית של צינור ההנשמה (טובוס) לרירית קנה הנשימה, הגורמת להצטלקות קשה והיצרות של נתיב האוויר.",
+                category: "נשימה והנשמה",
+                source: "שחזור אמצע ייחודית"
+            },
+            {
+                id: 28,
+                text: "מהי ההשפעה השלילית של היפראוקסמיה (Hyperoxemia - עודף חמצן בדם) ביילודים?",
+                options: [
+                    "הרס חלבונים (עקה חמצונית חריפה, הרס חלבונים ונזק לרקמות)",
+                    "מביאה לסגירה מהירה ובטוחה של מומים לבביים",
+                    "משפרת את תפקוד הכליות והפרשת שתן",
+                    "מונעת לחלוטין את התפתחות ה-BPD"
+                ],
+                correctIndex: 0,
+                explanation: "חמצן בריכוז גבוה מייצר רדיקלים חופשיים (ROS) אשר פוגעים ישירות בממברנות התאים, בחלבונים וב-DNA. בפגים, חשיפה לעודף חמצן קשורה ל-BPD בריאות ופתולוגיה ברשתית העין (ROP).",
+                category: "רפואת פגים",
+                source: "שחזור אמצע ייחודית"
+            },
+            {
+                id: 29,
+                text: "מהי הסיבה השכיחה ביותר להופעת אי-בהירות באיברי המין (Ambiguous Genitalia) ביילודים?",
+                options: [
+                    "CAH (Congenital Adrenal Hyperplasia)",
+                    "תסמונת דאון (Trisomy 21)",
+                    "סוכרת הריונית לא מאוזנת של האם",
+                    "מחסור חריף בהורמון גדילה"
+                ],
+                correctIndex: 0,
+                explanation: "היפרפלזיה מולדת של האדרנל (CAH) היא פגם גנטי שכיח המביא לייצור יתר של אנדרוגנים (הורמוני מין זכריים) על חשבון קורטיזול ואלדוסטרון, מה שגורם לויריליזציה של איברי המין בנקבות.",
+                category: "אלקטרוליטים ומטבוליזם",
+                source: "שחזור אמצע ייחודית"
+            },
+            {
+                id: 30,
+                text: "במחלת ה-NAIT (Neonatal Alloimmune Thrombocytopenia), נגד מה מפתחת האם נוגדנים?",
+                options: [
+                    "הטסיות של העובר",
+                    "כדוריות הדם האדומות של האם עצמה",
+                    "חלבוני הכבד העובריים",
+                    "תאי הלב של העובר"
+                ],
+                correctIndex: 0,
+                explanation: "ב-NAIT האם נחשפת לאנטיגנים פלטרליים זרים על גבי טסיות העובר (שירש מהאב). הנוגדנים מסוג IgG שהאם מייצרת עוברים את השליה והורסים את טסיות העובר, מה שגורם לטרומבוציטופניה קשה.",
+                category: "רפואת פגים",
+                source: "שחזור אמצע ייחודית"
+            },
+            {
+                id: 31,
+                text: "עירוי של נפח דם גדול בפרק זמן קצר מאוד ליילוד עלול לגרום לסיבוכים הבאים:",
+                options: [
+                    "היפותרמיה והיפוקלצמיה",
+                    "היפרתרמיה והיפרקלצמיה",
+                    "בססת נשימתית חריפה",
+                    "עלייה חדה ברמת הטרומבוציטים בלבד"
+                ],
+                correctIndex: 0,
+                explanation: "דם שמקורו בקירור עלול להוריד את טמפרטורת גוף היילוד (היפותרמיה). בנוסף, מוצרי דם מכילים ציטראט (Citrate) כחומר משמר, אשר קושר את הסידן החופשי בדם היילוד וגורם לירידה חדה ברמות הסידן המיונן (היפוקלצמיה).",
+                category: "רפואת פגים",
+                source: "שחזור אמצע ייחודית"
+            },
+            {
+                id: 32,
+                text: "מה תהיה ההשפעה הרחמית של Renal Agenesis (אי-ספיקת כליות מולדת/חוסר בכליות) דו-צדדי?",
+                options: [
+                    "מיעוט מי שפיר קיצוני",
+                    "ריבוי מי שפיר קיצוני",
+                    "אי-ספיקת לב ימנית מיידית ברחם",
+                    "אנמיה קשה של העובר"
+                ],
+                correctIndex: 0,
+                explanation: "החל מהשליש השני להריון, שתן העובר מהווה את המקור העיקרי ליצירת מי השפיר. בהיעדר כליות (Renal Agenesis דו-צדדי), אין ייצור שתן, מה שמוביל למיעוט מי שפיר קיצוני הגורם לתת-התפתחות של הריאות.",
+                category: "אלקטרוליטים ומטבוליזם",
+                source: "שחזור אמצע ייחודית"
+            },
+            {
+                id: 33,
+                text: "מהו הטיפול הדפיניטיבי ב-PUV (Posterior Urethral Valves) ביילודים?",
+                options: [
+                    "צריבת מסתמים",
+                    "צנתור שתן כרוני לכל החיים",
+                    "השתלת כליה דחופה בימים הראשונים לחיים",
+                    "מתן טיפול ממושך בפרוסטין"
+                ],
+                correctIndex: 0,
+                explanation: "PUV הוא מום חסימתי של השופכה בבנים הנגרם עקב קרום המפריע לזרימת השתן. הטיפול הדפיניטיבי והמציל את הכליות הוא כריתה או צריבה של הקרומים החוסמים (Valve Ablation).",
+                category: "אלקטרוליטים ומטבוליזם",
+                source: "שחזור אמצע ייחודית"
+            },
+            {
+                id: 34,
+                text: "איזה מבין הרפלקסים הבאים אינו מופיע אצל יילוד בריא במועד (Term newborn)?",
+                options: [
+                    "צנחן (PARASHUT)",
+                    "תפיסה (Grasp)",
+                    "מורו",
+                    "ROOTING"
+                ],
+                correctIndex: 0,
+                explanation: "רפלקס הצנחן (Parachute reflex) הוא רפלקס הגנה והתפתחותי המופיע מאוחר יותר בחיים, בדרך כלל סביב גיל 6 עד 9 חודשים, ואינו קיים אצל יילוד במועד.",
+                category: "רפואת פגים",
+                source: "שחזור אמצע ייחודית"
+            },
+            {
+                id: 35,
+                text: "מה נמוך של פחמן דו-חמצני (Hypocapnia/Low CO2) ביילוד מונשם עלול לגרום ל-PVL עקב:",
+                options: [
+                    "CO2 נמוך גורם ל- PVL (על ידי כיווץ כלי דם מוחיים ואיסכמיה)",
+                    "עלייה חדה בלחץ הדם הריאתי",
+                    "קריסה של דרכי הנשימה העליונות",
+                    "עירור רפלקס הנשימה הספונטני בצורה חריפה"
+                ],
+                correctIndex: 0,
+                explanation: "רמות CO2 נמוכות בדם גורמות לכיווץ חד של כלי הדם במוח. הדבר מוביל לירידה בזרימת הדם ובפרפוזיה המוחית, ומעלה דרמטית את הסיכון לאיסכמיה ונזק לחומר הלבן - PVL.",
+                category: "נשימה והנשמה",
+                source: "שחזור אמצע ייחודית"
+            },
+            {
+                id: 36,
+                text: "מהי התגובה התקינה של יילוד לביצוע Oculovestibular Reflex?",
+                options: [
+                    "מזיז עיניים נגד מקום הכאב (תגובת תזוזת עיניים קלאסית)",
+                    "מזיז עיניים לכיוון מקור הכאב",
+                    "הנפת הידיים לצדדים בבהלה",
+                    "כיווץ מיידי של האישונים דו-צדדית"
+                ],
+                correctIndex: 0,
+                explanation: "רפלקס עיני-פרוזדורי נבדק על ידי סיבוב הראש מצד לצד או בדיקה וסטיבולרית. ביילוד בריא עם גזע מוח תקין, העיניים יפנו לכיוון הנגדי לתנועה או הגירוי כדי לשמור על שדה הראייה קבוע.",
+                category: "רפואת פגים",
+                source: "שחזור מועד ב"
+            },
+            {
+                id: 37,
+                text: "באיזה שלב קליני מבוצע ניתוח דחוף ב-NEC (Necrotizing Enterocolitis)?",
+                options: [
+                    "בשלב 3 כשנראה אוויר חופשי בבטן PNEUMOPERITONEUM",
+                    "בשלב 1 כאשר נצפה דם סמוי בצואה בלבד",
+                    "בשלב 2 כאשר מופיעה פנאומטוזיס פנימית בדופן המעי",
+                    "כאשר הפג אינו מצליח לעלות במשקל במשך 3 ימים"
+                ],
+                correctIndex: 0,
+                explanation: "נוכחות של אוויר חופשי בחלל הבטן (Pneumoperitoneum) מעידה על פרפורציה (התנקבות) של המעי, שהיא מצב חירום כירורגי מסכן חיים המצריך התערבות ניתוחית מיידית.",
+                category: "רפואת פגים",
+                source: "שחזור מועד ב"
+            },
+            {
+                id: 38,
+                text: "מה נכון לגבי סימן באבינסקי (Babinski Sign) בתינוקות?",
+                options: [
+                    "בגיל 3 חודשים הסימן תקין (ובגיל שנה וחצי-שנתיים נהיה פתולוגי)",
+                    "בגיל שנה הסימן פתולוגי לחלוטין",
+                    "הסימן נעלם לחלוטין כבר בגיל חודשיים",
+                    "הוא מעיד תמיד על פגיעה נוירולוגית קשה ביילוד"
+                ],
+                correctIndex: 0,
+                explanation: "בשל חוסר בשלות של המערכת הפירמידלית (Corticospinal tract), סימן באבינסקי חיובי (פריסת אצבעות הרגל מעלה) הוא ממצא תקין לחלוטין בתינוקות קטנים, והוא הופך לפתולוגי רק לאחר גיל שנה וחצי עד שנתיים.",
+                category: "רפואת פגים",
+                source: "שחזור מועד ב"
+            },
+            {
+                id: 39,
+                text: "מהו התפקיד הראשי של אשלגן (Potassium - K+) בגוף האדם?",
+                options: [
+                    "בקרת פעילות אנזימטית תוך תאית",
+                    "בניית שלד העצמות והשיניים",
+                    "שמירה על הלחץ האונקוטי בפלסמה",
+                    "ויסות נפח הנוזל החוץ-תאי באופן בלעדי"
+                ],
+                correctIndex: 0,
+                explanation: "אשלגן הוא הקטיון התוך-תאי העיקרי. תפקידו קריטי לשמירה על פוטנציאל הממברנה החשמלי של תאים (במיוחד תאי עצב ושריר הלב), ויסות הולכה עצבית, תפקוד אנזימטי תוך-תאי וכיווץ שרירים.",
+                category: "אלקטרוליטים ומטבוליזם",
+                source: "שחזור מועד ב"
+            },
+            {
+                id: 40,
+                text: "כל הבאים מהווים גורמי סיכון ל-NEC (Necrotizing Enterocolitis) פרט ל:",
+                options: [
+                    "הפסקת כלכלה לזמן ארוך",
+                    "פגות ומשקל לידה נמוך במיוחד",
+                    "הזנה אנטרלית אגרסיבית ומהירה מדי",
+                    "היפוקסיה ואספיקציה סביב הלידה"
+                ],
+                correctIndex: 0,
+                explanation: "גורמי הסיכון העיקריים ל-NEC כוללים פגות, איסכמיה של המעי, שגשוג חיידקים פתוגניים והזנה מהירה. הפסקת כלכלה מוחלטת כשלעצמה אינה מוגדרת כגורם סיכון ישיר ל-NEC, אלא הזנה לא נכונה או פגיעה בזרימת הדם למעי.",
+                category: "רפואת פגים",
+                source: "שחזור מועד ב"
+            },
+            {
+                id: 41,
+                text: "מהו הטיפול השמרני הראשוני בחשד או באבחנה של NEC?",
+                options: [
+                    "הפסקת כלכלה ומתן אנטיביוטיקה רחוות טווח",
+                    "הכפלת קצב האכלה כדי לעודד את פריסטלטיקת המעי",
+                    "ניתוח כריתה מונע מיידי",
+                    "הזנה מרוכזת דרך הפה בלבד"
+                ],
+                correctIndex: 0,
+                explanation: "הטיפול השמרני הראשוני ב-NEC מבוסס על מנוחה מוחלטת של המעי (הפסקת כלכלה ומתן TPN), ניקוז דקומפרסיה של הקיבה באמצעות זונדה פתוחה, וטיפול אנטיביוטי רחב טווח.",
+                category: "רפואת פגים",
+                source: "שחזור מועד ב"
+            },
+            {
+                id: 42,
+                text: "מה נחשב להיפרנתרמיה (Hypernatremia) בבדיקת דם סיסטמית?",
+                options: [
+                    "מעל 145 בדם",
+                    "מתחת 150 בדם",
+                    "מעל 145 בשתן",
+                    "ריכוז נתרן בדם מתחת ל-135 mEq/L"
+                ],
+                correctIndex: 0,
+                explanation: "היפרנתרמיה מוגדרת כעלייה בריכוז הנתרן בנסיוב מעל 145 mEq/L. היא נובעת לרוב מחוסר במים חופשיים או מאובדן נוזלים מוגבר.",
+                category: "אלקטרוליטים ומטבוליזם",
+                source: "שחזור מועד ב"
+            },
+            {
+                id: 43,
+                text: "מהו מנגנון הפיצוי הפיזיולוגי העיקרי של הגוף בעת עליית האוסמולריות בדם?",
+                options: [
+                    "הפרשת ADH (וגם גירוי צמא וספיגה חוזרת של מים בטובולי בכליה)",
+                    "דיכוי מנגנון הצמא כדי למנוע שתיית יתר",
+                    "הגברת הפרשת המים החופשיים בכליות",
+                    "מעבר אקטיבי של מים מהדם אל תוך תאי הגוף"
+                ],
+                correctIndex: 0,
+                explanation: "עלייה באוסמולריות (ריכוז מומסים גבוה בדם) מעוררת אוסמורצפטורים במוח. אלו מפעילים את תחושת הצמא (לעידוד שתייה) ומפרישים ADH (הורמון נוגד השתנה) הגורם לספיגה חוזרת של מים חופשיים בטובולי בכליה לשחזור המאזן.",
+                category: "אלקטרוליטים ומטבוליזם",
+                source: "שחזור מועד ב"
+            },
+            {
+                id: 44,
+                text: "מהו זמן מילוי קפילרי (Capillary Refill Time - CRT) תקין בילדים?",
+                options: [
+                    "2 שניות",
+                    "3 שניות",
+                    "4 שניות",
+                    "5 שניות"
+                ],
+                correctIndex: 0,
+                explanation: "זמן מילוי קפילרי תקין בילדים ובתינוקות הוא עד 2 שניות. ערך מוארך מעיד על ירידה בפרפוזיה פריפרית (למשל במצבי התייבשות, קור או שוק).",
+                category: "טיפול נמרץ ילדים",
+                source: "שחזור טיפול נמרץ ילדים"
+            },
+            {
+                id: 45,
+                text: "מה מאפיין את מחלת ה-ITP (Immune Thrombocytopenic Purpura) בילדים?",
+                options: [
+                    "טסיות נמוכות, מח עצם תקין, לא ברור מקור הטרומבוציטופניה",
+                    "חול ף ספונטנית תוך 3 חודשים תמיד ללא קשר לערכים",
+                    "D-DIMER גבוה, PT ו PTT מאורכים, טרומבוציטפניה",
+                    "עלייה ברמת הטרומבוציטים משנית לזיהום ויראלי"
+                ],
+                correctIndex: 0,
+                explanation: "ITP בילדים מאופיינת בהרס מתווך נוגדנים של טסיות דם. המאפיין הקלאסי הוא טרומבוציטופניה מבודדת (מתחת ל-100,000) עם מח עצם תקין המראה ריבוי מגקריוציטים, ללא פגיעה בשורות דם אחרות וללא הפרעות קרישה סיסטמיות (בניגוד ל-DIC).",
+                category: "טיפול נמרץ ילדים",
+                source: "שחזור טיפול נמרץ ילדים"
+            },
+            {
+                id: 46,
+                text: "מה מבין הבאים לא יופיע בהידרוצפלוס (Hydrocephalus) אצל תינוק בן 4 חודשים?",
+                options: [
+                    "פפיל אדמה",
+                    "מרפס תפוח",
+                    "הרחבת סוטורות (תפרים בגולגולת)",
+                    "sunset eyes"
+                ],
+                correctIndex: 0,
+                explanation: "אצל תינוקות מתחת לגיל שנה, תפרי הגולגולת והמרפסים עדיין פתוחים וגמישים. בעת עליית לחץ תוך-גולגולתי (ICP), הגולגולת מתרחבת והלחץ מתפזר, ולכן פפילאדמה (בצקת בעצב הראייה) היא ממצא נדיר מאוד בשלב זה.",
+                category: "טיפול נמרץ ילדים",
+                source: "שחזור טיפול נמרץ ילדים"
+            },
+            {
+                id: 47,
+                text: "פענוח ערכי גזים: pH = 7.24, CO2 = 30, PO2 = 45, HCO3 = 14. מהי האבחנה הנכונה?",
+                options: [
+                    "חמצת מטבולית עם פיצוי נשימתי",
+                    "בססת מטבולית עם פיצוי נשימתי",
+                    "בססת נשימתית ללא פיצוי מטבולי",
+                    "חמצת נשימתית עם פיצוי מטבולי"
+                ],
+                correctIndex: 0,
+                explanation: "ערך ה-pH נמוך מ-7.35 (חמצת). רמת ה-HCO3 נמוכה מ-22 (= 14, המרכיב המטבולי הוא הגורם לחמצת). רמת ה-CO2 נמוכה מ-35 (= 30), מה שמראה שהריאות מנסות לפצות על ידי היפרוונטילציה (פיצוי נשימתי חלקי).",
+                category: "טיפול נמרץ ילדים",
+                source: "שחזור טיפול נמרץ ילדים"
+            },
+            {
+                id: 48,
+                text: "מהו המדד המרמז על מעבר של ילד לשוק היפוולמי לא מפוצה (Decompensated Hypovolemic Shock)?",
+                options: [
+                    "לחץ דם נמוך",
+                    "טכיקרדיה",
+                    "ברדיקרדיה",
+                    "טכיפניאה"
+                ],
+                correctIndex: 0,
+                explanation: "בילדים ותינוקות, מנגנוני הפיצוי הקרדיווסקולריים (כיווץ כלי דם וטכיקרדיה) יעילים מאוד. שוק מוגדר כ'מפוצה' כל עוד לחץ הדם תקין. ירידת לחץ דם (Hypotension) היא סימן מאוחר המעיד על קריסת מנגנוני הפיצוי ומעבר לשוק לא מפוצה.",
+                category: "טיפול נמרץ ילדים",
+                source: "שחזור טיפול נמרץ ילדים"
+            },
+            {
+                id: 49,
+                text: "מהי ההגדרה המדויקת של ספסיס (Sepsis) ברפואה דחופה?",
+                options: [
+                    "SIRS + זיהום מתועד או או משוער",
+                    "systemic inflammatory responsive syndrome (SIRS) בלבד",
+                    "לחץ דם נמוך עמידות למתן נוזלים",
+                    "ספסיס + פגיעה בתפקוד איבר או פרפוזיה נמוכה לרקמות"
+                ],
+                correctIndex: 0,
+                explanation: "ספסיס מוגדר כנוכחות של תסמונת תגובה דלקתית סיסטמית (SIRS - הכוללת שינויים בחום, דופק, נשימה וספירת תאי דם לבנים) הנגרמת ישירות מזיהום מוכח או חשוד קלינית.",
+                category: "טיפול נמרץ ילדים",
+                source: "שחזור טיפול נמרץ ילדים"
+            },
+            {
+                id: 50,
+                text: "מהו הטיפול המיידי והמציל חיים בזיהוי Tension Pneumothorax?",
+                options: [
+                    "needle application במרווח צלעי 2-3 מיד קלביקולרי",
+                    "נקז חזה במרווח צלעי 2-3 מיד קלביקולרי",
+                    "נקז חזה במרווח צלעי 4-5 מיד אקסילרי",
+                    "needle application במרווח צלעי 2-3 מיד אקסילרי"
+                ],
+                correctIndex: 0,
+                explanation: "בטנשן פנאומותרקס, אוויר מצטבר בחלל הפלאורלי תחת לחץ ומסיט את המדיאסטינום, מה שמוביל לקריסת החזר הדם ללב. הטיפול המיידי הוא הפחתת לחץ מהירה על ידי החדרת מחט עבה למרווח הבין-צלעי השני בקו האמצע של הבריח (Mid-clavicular line).",
+                category: "טיפול נמרץ ילדים",
+                source: "שחזור טיפול נמרץ ילדים"
+            }
+        ];
+
+        // Core memory allocation - clean & flat
+        let questions = JSON.parse(localStorage.getItem('ios_custom_q_stable'))
+            ? [...baseQuestions, ...JSON.parse(localStorage.getItem('ios_custom_q_stable'))]
+            : [...baseQuestions];
+
+        let currentFiltered = [...questions];
+        let currentMode = 'practice';
+        let selectedCategory = 'All';
+        let searchQuery = '';
+
+        // Pointer indexes
+        let practiceIndex = 0;
+        let flashcardIndex = 0;
+        let flashcardFlipped = false;
+
+        // Statistics Tracker
+        let statistics = {
+            correct: 0,
+            wrong: 0,
+            answered: {} // map of { questionId: wasCorrect }
+        };
+
+        // Exam simulator states
+        let examQuestions = [];
+        let examAnswers = {};
+        let examCurrentIndex = 0;
+        let examTimeLeft = 3600; 
+        let examInterval = null;
+
+        // Secure, zero-dependency options shuffler
+        function shuffleOptions(question) {
+            let mapped = [];
+            for (let i = 0; i < question.options.length; i++) {
+                mapped.push({
+                    text: question.options[i],
+                    isCorrect: i === question.correctIndex
+                });
+            }
+
+            const specialKeys = ["כל התשובות", "כל הסעיפים", "תשובות א", "אף אחד", "שני הסעיפים"];
+            let normalOpts = [];
+            let specialOpts = [];
+
+            for (let i = 0; i < mapped.length; i++) {
+                let opt = mapped[i];
+                let isSpecial = false;
+                for (let k = 0; k < specialKeys.length; k++) {
+                    if (opt.text.indexOf(specialKeys[k]) !== -1) {
+                        isSpecial = true;
+                        break;
+                    }
+                }
+                if (isSpecial) {
+                    let adjustedText = opt.text;
+                    if (opt.text.indexOf("כל התשובות נכונות") !== -1) {
+                        adjustedText = "כל הסעיפים האחרים נכונים";
+                    } else if (opt.text.indexOf("תשובות א' ו-ב' נכונות") !== -1) {
+                        adjustedText = "שני הסעיפים הראשונים נכונים";
+                    }
+                    specialOpts.push({ text: adjustedText, isCorrect: opt.isCorrect });
+                } else {
+                    normalOpts.push(opt);
+                }
+            }
+
+            // Simple basic Fisher-Yates shuffle
+            for (let i = normalOpts.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const temp = normalOpts[i];
+                normalOpts[i] = normalOpts[j];
+                normalOpts[j] = temp;
+            }
+
+            const combined = normalOpts.concat(specialOpts);
+            let correctIdx = 0;
+            for (let i = 0; i < combined.length; i++) {
+                if (combined[i].isCorrect) {
+                    correctIdx = i;
+                    break;
+                }
+            }
+
+            let textArray = [];
+            for (let i = 0; i < combined.length; i++) {
+                textArray.push(combined[i].text);
+            }
+
+            return {
+                shuffledTexts: textArray,
+                correctIndex: correctIdx
+            };
+        }
+
+        // Filters processor
+        function applyFilters() {
+            let filtered = [];
+            for (let i = 0; i < questions.length; i++) {
+                let q = questions[i];
+                let matchesCat = selectedCategory === 'All' || q.category === selectedCategory;
+                
+                let matchesSearch = true;
+                if (searchQuery !== '') {
+                    let query = searchQuery.toLowerCase();
+                    let textMatch = q.text.toLowerCase().indexOf(query) !== -1;
+                    let expMatch = q.explanation ? q.explanation.toLowerCase().indexOf(query) !== -1 : false;
+                    let srcMatch = q.source.toLowerCase().indexOf(query) !== -1;
+                    matchesSearch = textMatch || expMatch || srcMatch;
+                }
+
+                if (matchesCat && matchesSearch) {
+                    filtered.push(q);
+                }
+            }
+
+            currentFiltered = filtered;
+            practiceIndex = 0;
+            flashcardIndex = 0;
+
+            if (currentMode === 'practice') {
+                renderPractice();
+            } else if (currentMode === 'flashcard') {
+                renderFlashcard();
+            }
+        }
+
+        function searchQueryUpdated(val) {
+            searchQuery = val;
+            applyFilters();
+        }
+
+        function selectCategory(cat) {
+            const filters = ["All", "נשימה והנשמה", "רפואת פגים", "המערכת הקרדיווסקולרית", "עור ופצעים", "אלקטרוליטים ומטבוליזם", "טיפול נמרץ ילדים"];
+            for (let i = 0; i < filters.length; i++) {
+                let el = document.getElementById(`cat-${filters[i]}`);
+                if (el) el.classList.remove('active');
+            }
+
+            let activeBtn = document.getElementById(`cat-${cat}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            selectedCategory = cat;
+            applyFilters();
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            const modes = ['practice', 'exam', 'flashcard'];
+            for (let i = 0; i < modes.length; i++) {
+                document.getElementById(`tab-${modes[i]}`).classList.remove('active');
+            }
+            document.getElementById(`tab-${mode}`).classList.add('active');
+
+            document.getElementById('practiceContainer').classList.toggle('hidden', mode !== 'practice');
+            document.getElementById('examContainer').classList.toggle('hidden', mode !== 'exam');
+            document.getElementById('flashcardContainer').classList.toggle('hidden', mode !== 'flashcard');
+            document.getElementById('filterSection').classList.toggle('hidden', mode === 'exam');
+
+            if (mode === 'practice') {
+                renderPractice();
+            } else if (mode === 'exam') {
+                startExamSim();
+            } else if (mode === 'flashcard') {
+                renderFlashcard();
+            }
+        }
+
+        // ================= PRACTICE CONTROLS =================
+        let activePracShuffled = null;
+
+        function renderPractice() {
+            const container = document.getElementById('pracOptions');
+            const resolution = document.getElementById('resolutionBox');
+            resolution.classList.add('hidden');
+
+            if (currentFiltered.length === 0) {
+                document.getElementById('pracQuestion').innerHTML = "❌ לא נמצאו שאלות תחת סינון זה.";
+                container.innerHTML = '';
+                document.getElementById('pracProgressTracker').innerText = "שאלה 0 מתוך 0";
+                return;
+            }
+
+            const q = currentFiltered[practiceIndex];
+            document.getElementById('pracQuestion').innerText = q.text;
+            document.getElementById('pracCategory').innerText = q.category;
+            document.getElementById('pracSource').innerText = `מקור: ${q.source}`;
+            document.getElementById('pracProgressTracker').innerText = `שאלה ${practiceIndex + 1} מתוך ${currentFiltered.length}`;
+
+            activePracShuffled = shuffleOptions(q);
+
+            container.innerHTML = '';
+            for (let i = 0; i < activePracShuffled.shuffledTexts.length; i++) {
+                let text = activePracShuffled.shuffledTexts[i];
+                const btn = document.createElement('button');
+                btn.className = "option-button";
+                btn.onclick = (function(idx) {
+                    return function() { checkPracticeAnswer(idx, btn); };
+                })(i);
+                
+                btn.innerHTML = `
+                    <span style="padding-left: 10px; text-align: right;">${text}</span>
+                    <span class="option-num">${i + 1}</span>
+                `;
+                container.appendChild(btn);
+            }
+        }
+
+        function checkPracticeAnswer(selectedIdx, element) {
+            if (!activePracShuffled) return;
+            const q = currentFiltered[practiceIndex];
+            const correctIdx = activePracShuffled.correctIndex;
+            const isCorrect = selectedIdx === correctIdx;
+
+            const container = document.getElementById('pracOptions');
+            const buttons = container.querySelectorAll('.option-button');
+
+            for (let i = 0; i < buttons.length; i++) {
+                let btn = buttons[i];
+                btn.onclick = null; // Lock clicking
+                if (i === correctIdx) {
+                    btn.classList.add('border-success', 'text-success');
+                    let numSpan = btn.querySelector('.option-num');
+                    numSpan.style.backgroundColor = 'var(--success)';
+                    numSpan.style.color = 'white';
+                    numSpan.innerText = '✓';
+                } else if (i === selectedIdx) {
+                    btn.classList.add('border-error', 'text-error');
+                    let numSpan = btn.querySelector('.option-num');
+                    numSpan.style.backgroundColor = 'var(--error)';
+                    numSpan.style.color = 'white';
+                    numSpan.innerText = '✗';
+                } else {
+                    btn.style.opacity = '0.35';
+                }
+            }
+
+            // Tracking progress stats
+            if (!statistics.answered[q.id]) {
+                statistics.answered[q.id] = isCorrect;
+                if (isCorrect) {
+                    statistics.correct++;
+                } else {
+                    statistics.wrong++;
+                }
+                updateDashboard();
+            }
+
+            const resBox = document.getElementById('resolutionBox');
+            const textEl = document.getElementById('resolutionText');
+            textEl.innerText = q.explanation || "אין הסבר רשמי מורחב זמין לשאלה זו.";
+            resBox.classList.remove('hidden');
+        }
+
+        function nextPrac() {
+            if (practiceIndex < currentFiltered.length - 1) {
+                practiceIndex++;
+                renderPractice();
+            } else {
+                showToast("🎉 הגעת לסוף השאלות הזמינות בסינון זה!");
+            }
+        }
+
+        function prevPrac() {
+            if (practiceIndex > 0) {
+                practiceIndex--;
+                renderPractice();
+            }
+        }
+
+        // ================= FLASHCARDS CONTROLS =================
+        function renderFlashcard() {
+            document.getElementById('fcFront').classList.remove('hidden');
+            document.getElementById('fcBack').classList.add('hidden');
+            flashcardFlipped = false;
+
+            if (currentFiltered.length === 0) {
+                document.getElementById('fcFront').innerText = "❌ אין כרטיסיות תואמות.";
+                document.getElementById('fcIndex').innerText = "כרטיסייה 0/0";
+                return;
+            }
+
+            const q = currentFiltered[flashcardIndex];
+            document.getElementById('fcCategory').innerText = q.category;
+            document.getElementById('fcFront').innerText = q.text;
+
+            const correctAns = q.options[q.correctIndex];
+            document.getElementById('fcAnswerHeader').innerText = correctAns;
+            document.getElementById('fcAnswerBody').innerText = q.explanation || 'אין הסבר מפורט כרגע.';
+            document.getElementById('fcIndex').innerText = `כרטיסייה ${flashcardIndex + 1} מתוך ${currentFiltered.length}`;
+        }
+
+        function toggleFlashcardView() {
+            const front = document.getElementById('fcFront');
+            const back = document.getElementById('fcBack');
+            if (flashcardFlipped) {
+                back.classList.add('hidden');
+                front.classList.remove('hidden');
+            } else {
+                front.classList.add('hidden');
+                back.classList.remove('hidden');
+            }
+            flashcardFlipped = !flashcardFlipped;
+        }
+
+        function nextFlashcard() {
+            if (flashcardIndex < currentFiltered.length - 1) {
+                flashcardIndex++;
+                renderFlashcard();
+            }
+        }
+
+        function prevFlashcard() {
+            if (flashcardIndex > 0) {
+                flashcardIndex--;
+                renderFlashcard();
+            }
+        }
+
+        // ================= EXAM CONTROLS =================
+        function startExamSim() {
+            // Build random 50-questions test
+            examQuestions = [];
+            let tempQuestions = [...questions];
+            for (let i = tempQuestions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const temp = tempQuestions[i];
+                tempQuestions[i] = tempQuestions[j];
+                tempQuestions[j] = temp;
+            }
+            examQuestions = tempQuestions.slice(0, 50);
+
+            // Shuffling prep
+            examQuestions = examQuestions.map(q => {
+                const s = shuffleOptions(q);
+                return {
+                    ...q,
+                    shuffledTexts: s.shuffledTexts,
+                    newCorrectIndex: s.correctIndex
+                };
+            });
+
+            examAnswers = {};
+            examCurrentIndex = 0;
+            examTimeLeft = 3600; // 60 mins
+
+            document.getElementById('examQuestionCard').classList.remove('hidden');
+            document.getElementById('examBulletsNav').classList.remove('hidden');
+            document.getElementById('examReportCard').classList.add('hidden');
+
+            renderExamQuestion();
+            renderExamBullets();
+            runTimer();
+        }
+
+        function runTimer() {
+            clearInterval(examInterval);
+            examInterval = setInterval(() => {
+                examTimeLeft--;
+                if (examTimeLeft <= 0) {
+                    clearInterval(examInterval);
+                    submitExam();
+                } else {
+                    const m = Math.floor(examTimeLeft / 60);
+                    const s = examTimeLeft % 60;
+                    document.getElementById('examTimer').innerText = `זמן נותר: ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function renderExamQuestion() {
+            const q = examQuestions[examCurrentIndex];
+            document.getElementById('examQuestionText').innerText = q.text;
+            document.getElementById('examProgressLabel').innerText = `שאלה ${examCurrentIndex + 1}/${examQuestions.length}`;
+
+            const container = document.getElementById('examOptionsList');
+            container.innerHTML = '';
+
+            for (let i = 0; i < q.shuffledTexts.length; i++) {
+                let optionText = q.shuffledTexts[i];
+                const isSelected = examAnswers[examCurrentIndex] === optionText;
+                
+                const btn = document.createElement('button');
+                btn.className = "option-button " + (isSelected ? "border-success text-success" : "");
+                btn.onclick = (function(textVal) {
+                    return function() { selectExamAnswer(textVal); };
+                })(optionText);
+
+                btn.innerHTML = `
+                    <span style="padding-left: 10px; text-align: right;">${optionText}</span>
+                    <span class="option-num" style="${isSelected ? 'background-color: var(--success); color: white;' : ''}">${i + 1}</span>
+                `;
+                container.appendChild(btn);
+            }
+        }
+
+        function selectExamAnswer(text) {
+            examAnswers[examCurrentIndex] = text;
+            renderExamQuestion();
+            renderExamBullets();
+        }
+
+        function renderExamBullets() {
+            const container = document.getElementById('examBulletsNav');
+            container.innerHTML = '';
+
+            for (let i = 0; i < examQuestions.length; i++) {
+                const isCurrent = i === examCurrentIndex;
+                const isAns = examAnswers[i] !== undefined;
+
+                const b = document.createElement('button');
+                b.className = "bullet-btn " + (isCurrent ? "active " : "") + (isAns ? "answered " : "");
+                b.onclick = (function(idx) {
+                    return function() { jumpToExamIndex(idx); };
+                })(i);
+                b.innerText = i + 1;
+                container.appendChild(b);
+            }
+        }
+
+        function jumpToExamIndex(idx) {
+            examCurrentIndex = idx;
+            renderExamQuestion();
+            renderExamBullets();
+        }
+
+        function nextExam() {
+            if (examCurrentIndex < examQuestions.length - 1) {
+                examCurrentIndex++;
+                renderExamQuestion();
+                renderExamBullets();
+            }
+        }
+
+        function prevExam() {
+            if (examCurrentIndex > 0) {
+                examCurrentIndex--;
+                renderExamQuestion();
+                renderExamBullets();
+            }
+        }
+
+        function submitExam() {
+            clearInterval(examInterval);
+
+            let correctCount = 0;
+            for (let i = 0; i < examQuestions.length; i++) {
+                let q = examQuestions[i];
+                let userSelection = examAnswers[i];
+                let realCorrectText = q.shuffledTexts[q.newCorrectIndex];
+                if (userSelection === realCorrectText) {
+                    correctCount++;
+                }
+            }
+
+            const score = Math.round((correctCount / examQuestions.length) * 100);
+
+            // Hide/Show correct cards
+            document.getElementById('examQuestionCard').classList.add('hidden');
+            document.getElementById('examBulletsNav').classList.add('hidden');
+            
+            const report = document.getElementById('examReportCard');
+            report.classList.remove('hidden');
+
+            document.getElementById('finalExamScore').innerText = `${score}`;
+            document.getElementById('finalExamCorrect').innerText = `${correctCount}/${examQuestions.length}`;
+
+            const feedback = document.getElementById('examFeedback');
+            if (score >= 90) {
+                feedback.innerHTML = "🌟 <strong>מדהים!</strong> יש לך שליטה מעולה בחומר של מודולה ייחודית וטנ\"צ ילדים. הידע שלך מוכן לחלוטין למבחן האמיתי.";
+            } else if (score >= 75) {
+                feedback.innerHTML = "👍 <strong>ציון עובר טוב מאוד!</strong> את במצב בטוח, מומלץ לעבור על השאלות שטעית בהן במצב תרגול חופשי כדי לסגור קצוות.";
+            } else {
+                feedback.innerHTML = "📚 <strong>הציון מתחת לרמת המעבר המומלצת.</strong> מומלץ לחזור למצב תרגול חופשי, לקרוא בעיון את ההסברים הקליניים ולהתמקד במנגנוני הפגייה והאלקטרוליטים.";
+            }
+        }
+
+        // ================= APPLICATION UTILITIES =================
+        function updateDashboard() {
+            const correct = statistics.correct;
+            const wrong = statistics.wrong;
+            const total = correct + wrong;
+            const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+            document.getElementById('correctCounter').innerText = correct;
+            document.getElementById('wrongCounter').innerText = wrong;
+            document.getElementById('scorePercent').innerText = `${pct}%`;
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('alertToast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function toggleSection(id) {
+            const el = document.getElementById(id);
+            const caret = document.getElementById('caret');
+            el.classList.toggle('hidden');
+            caret.innerText = el.classList.contains('hidden') ? '+' : '-';
+        }
+
+        // Save Custom user created Question locally
+        function saveCustomQuestion() {
+            const text = document.getElementById('customText').value.trim();
+            const correct = document.getElementById('customCorrect').value.trim();
+            const d1 = document.getElementById('customD1').value.trim();
+            const d2 = document.getElementById('customD2').value.trim();
+            const d3 = document.getElementById('customD3').value.trim();
+            const cat = document.getElementById('customCategory').value;
+            const src = document.getElementById('customSource').value.trim() || "תוספת אישית";
+            const exp = document.getElementById('customExplain').value.trim();
+
+            if (!text || !correct || !d1 || !d2 || !d3) {
+                showToast("⚠️ אנא מלאי את כל השדות של השאלה והמסיחים!");
+                return;
+            }
+
+            const newQ = {
+                id: Date.now(),
+                text: text,
+                options: [correct, d1, d2, d3],
+                correctIndex: 0, 
+                explanation: exp,
+                category: cat,
+                source: src
+            };
+
+            let stored = JSON.parse(localStorage.getItem('ios_custom_q_stable')) || [];
+            stored.push(newQ);
+            localStorage.setItem('ios_custom_q_stable', JSON.stringify(stored));
+
+            questions = [...baseQuestions, ...stored];
+            applyFilters();
+            
+            // UI reset
+            document.getElementById('customText').value = '';
+            document.getElementById('customCorrect').value = '';
+            document.getElementById('customD1').value = '';
+            document.getElementById('customD2').value = '';
+            document.getElementById('customD3').value = '';
+            document.getElementById('customExplain').value = '';
+
+            document.getElementById('totalDB').innerText = questions.length;
+            showToast("✅ השאלה החדשה נשמרה בהצלחה במאגר המקומי!");
+        }
+
+        // Initial setup on window load
+        window.onload = function() {
+            document.getElementById('totalDB').innerText = questions.length;
+            applyFilters();
+        };
+    </script>
+</body>
+</html>

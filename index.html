@@ -2591,6 +2591,48 @@ function checkPracticeAnswer(selectedIdx, btn, q) {
                 window.scrollTo({ top: 0, behavior: 'smooth' }); 
             }
         }
+        // --- מערכת ניהול וסיבוב כרטיסיות שינון ---
+        function renderFlashcard() {
+            if (currentFiltered.length === 0) return;
+            const q = currentFiltered[flashcardIndex];
+            flashcardFlipped = false;
+            
+            const inner = document.getElementById('flashcardInner');
+            if (inner) inner.style.transform = "rotateY(0deg)"; // איפוס סיבוב
+            
+            document.getElementById('fcCategory').innerText = q.category;
+            document.getElementById('fcQuestionText').innerHTML = q.text;
+            document.getElementById('fcAnswerTextHeader').innerHTML = q.options[q.correctIndex];
+            document.getElementById('fcAnswerTextBody').innerHTML = q.explanation || '';
+            document.getElementById('flashCardCount').innerText = `כרטיסייה ${flashcardIndex + 1} מתוך ${currentFiltered.length}`;
+            renderMathElements();
+        }
+
+        function flipFlashcard() {
+            const inner = document.getElementById('flashcardInner');
+            if (!inner) return;
+            
+            if (flashcardFlipped) {
+                inner.style.transform = "rotateY(0deg)";
+            } else {
+                inner.style.transform = "rotateY(180deg)";
+            }
+            flashcardFlipped = !flashcardFlipped;
+        }
+
+        function nextFlashcard() { 
+            if (flashcardIndex < currentFiltered.length - 1) { 
+                flashcardIndex++; 
+                renderFlashcard(); 
+            } 
+        }
+        
+        function prevFlashcard() { 
+            if (flashcardIndex > 0) { 
+                flashcardIndex--; 
+                renderFlashcard(); 
+            } 
+        }
 
         function showPracticeSummary() {
             document.getElementById('practiceContainer').classList.add('hidden');
